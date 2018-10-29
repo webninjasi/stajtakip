@@ -2,8 +2,6 @@ package main
 
 import (
 	"net/http"
-
-	"github.com/sirupsen/logrus"
 )
 
 type StajServer struct {
@@ -13,13 +11,11 @@ type StajServer struct {
 }
 
 func (s *StajServer) SetHandlers() {
+	// Kök dizinde web klasörünü sun
 	s.mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("web"))))
 }
 
 func (s *StajServer) Run() error {
-	logrus.WithFields(logrus.Fields{
-		"addr": s.addr,
-	}).Info("Sunucu başlatılıyor...")
 	return s.server.ListenAndServe()
 }
 

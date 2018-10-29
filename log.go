@@ -9,11 +9,14 @@ import (
 
 func init() {
 	logpath := os.Getenv("APP_LOG_FILE")
+
+	// Dosya belirtilmemişse sadece stdout'a yazdır
 	if logpath == "" {
 		logrus.SetOutput(os.Stdout)
 		return
 	}
 
+	// Hem dosyaya hem stdout'a yazdır
 	logfile, err := os.Open(os.Getenv("APP_LOG_FILE"))
 	if err != nil {
 		logrus.SetOutput(os.Stdout)
