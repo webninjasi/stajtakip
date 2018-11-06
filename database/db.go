@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func NewStajVeritabani(datasrc string) *StajDatabase {
 	}
 }
 
-func (sv *StajDatabase) ConnectAndExecute(ok chan<- bool) error {
+func (sv *StajDatabase) Connect(ok chan<- bool) error {
 	// Veritabanına zaten bağlı
 	if sv.db != nil {
 		return ErrAlreadyConnected

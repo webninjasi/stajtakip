@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"stajtakip/database"
+	"stajtakip/routes"
 )
 
 type StajServer struct {
@@ -10,9 +12,9 @@ type StajServer struct {
 	mux    *http.ServeMux
 }
 
-func (s *StajServer) SetHandlers() {
-	// Kök dizinde web klasörünü sun
-	s.mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("web"))))
+func (s *StajServer) SetHandlers(db *database.StajDatabase) {
+	s.mux.Handle("/", routes.Index)
+	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{db})
 }
 
 func (s *StajServer) Run() error {

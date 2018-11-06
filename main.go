@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"stajtakip/database"
 
 	"github.com/sirupsen/logrus"
 )
@@ -9,7 +10,6 @@ import (
 func main() {
 	srvAddr := os.Getenv("APP_SERVER_ADDR")
 	srv := NewStajServer(srvAddr)
-	srv.SetHandlers()
 
 	datasrc := os.Getenv("APP_DATA_SOURCE")
 	if datasrc == "" {
@@ -17,7 +17,7 @@ func main() {
 		return
 	}
 
-	db := NewStajVeritabani(datasrc)
+	db := database.NewStajVeritabani(datasrc)
 	dbOk := make(chan bool)
 	errChan := make(chan error)
 
@@ -27,7 +27,7 @@ func main() {
 		}).Info("Veritabanına bağlanılıyor...")
 
 		// Veritabanına bağlantıyı sağla
-		if err := db.ConnectAndExecute(dbOk); err != nil {
+		if err := db.Connect(dbOk); err != nil {
 			logrus.WithFields(logrus.Fields{
 				"err": err,
 			}).Error("Veritabanı bağlantısında bir hata meydana geldi!")
@@ -37,6 +37,8 @@ func main() {
 
 	go func() {
 		<-dbOk // Veritabanı bağlantısını bekle
+
+		srv.SetHandlers(db)
 
 		logrus.WithFields(logrus.Fields{
 			"addr": srvAddr,
