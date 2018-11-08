@@ -8,7 +8,7 @@ type Ogrenci struct {
 }
 
 func (ogr *Ogrenci) Insert(db *StajDatabase) error {
-	const sql string = "INSERT INTO `stajtest`.`ogrenciler` (`No`, `Ad`, `Soyad`, `Ogretim`) VALUES (?, ?, ?, ?);"
+	const sql string = "INSERT INTO ogrenciler (`No`, `Ad`, `Soyad`, `Ogretim`) VALUES (?, ?, ?, ?);"
 
 	result, err := db.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
 	if err != nil {

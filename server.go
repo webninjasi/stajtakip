@@ -15,6 +15,7 @@ type StajServer struct {
 func (s *StajServer) SetHandlers(db *database.StajDatabase) {
 	s.mux.Handle("/", routes.Index)
 	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{db})
+	s.mux.Handle("/staj-ekle", routes.StajEkle{db})
 }
 
 func (s *StajServer) Run() error {
