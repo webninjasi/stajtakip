@@ -11,7 +11,7 @@ type Staj struct {
 }
 
 func (stj *Staj) Insert(db *StajDatabase) error {
-	const sql string = "INSERT INTO stajlar (`OgrenciNo`, `Sinif`, `Kurum`, `Sehir`, `Konu`, `Baslangic`, `Bitis`) VALUES (?, ?, ?, ?, ?, ?, ?);"
+	const sql string = "INSERT INTO stajlar (`OgrenciNo`, `Sinif`, `Kurum`, `Sehir`, `Konu`, `Baslangic`, `Bitis`) VALUES (?, ?, ?, ?, ?, DATE ?, DATE ?);"
 
 	result, err := db.db.Exec(sql, stj.No, stj.Sinif, stj.Kurum, stj.Sehir, stj.Konu, stj.Baslangic, stj.Bitis)
 	if err != nil {
