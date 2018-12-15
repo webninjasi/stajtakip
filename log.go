@@ -7,9 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	logpath := os.Getenv("APP_LOG_FILE")
-
+func LogBaslat(logpath string) {
 	// Dosya belirtilmemişse sadece stdout'a yazdır
 	if logpath == "" {
 		logrus.SetOutput(os.Stdout)
@@ -17,11 +15,11 @@ func init() {
 	}
 
 	// Hem dosyaya hem stdout'a yazdır
-	logfile, err := os.Open(os.Getenv("APP_LOG_FILE"))
+	logfile, err := os.Open(logpath)
 	if err != nil {
 		logrus.SetOutput(os.Stdout)
 		logrus.WithFields(logrus.Fields{
-			"filename": os.Getenv("APP_LOG_FILE"),
+			"filename": logpath,
 			"error":    err,
 		}).Error("Log dosyası açılamadı!")
 		return

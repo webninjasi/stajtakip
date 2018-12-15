@@ -1,19 +1,31 @@
 package main
 
 import (
-	"os"
+	"log"
+	"stajtakip/cfg"
 	"stajtakip/database"
 
 	"github.com/sirupsen/logrus"
 )
 
+const AYARLAR_DOSYASI string = "ayarlar.json"
+
 func main() {
-	srvAddr := os.Getenv("APP_SERVER_ADDR")
+	// Ayarları oku
+	err := cfg.AyarlariOku(AYARLAR_DOSYASI)
+	if err != nil {
+		log.Fatalln("Ayarlar dosyası okunamadı:", err)
+	}
+
+	// Logrus'u ayarla
+	LogBaslat(cfg.LogDosyasi())
+
+	srvAddr := cfg.SunucuAdresi()
 	srv := NewStajServer(srvAddr)
 
-	datasrc := os.Getenv("APP_DATA_SOURCE")
+	datasrc := cfg.VeritabaniAdresi()
 	if datasrc == "" {
-		logrus.Error("Veritabanı adresi belirtilmemiş! (APP_DATA_SOURCE)")
+		logrus.Error("Veritabanı adresi belirtilmemiş!")
 		return
 	}
 
