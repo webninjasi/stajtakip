@@ -15,7 +15,7 @@ func LogBaslat(logpath string) {
 	}
 
 	// Hem dosyaya hem stdout'a yazdır
-	logfile, err := os.Open(logpath)
+	logfile, err := os.Create(logpath)
 	if err != nil {
 		logrus.SetOutput(os.Stdout)
 		logrus.WithFields(logrus.Fields{
