@@ -11,6 +11,7 @@ type Ayarlar struct {
 	VeritabaniAdresi string
 	LogDosyasi       string
 	GerekenStajGunu  int
+	MaxIstekBoyutu   int64
 }
 
 // Ayarlara varsayılan değerler ata
@@ -19,6 +20,7 @@ var ayarlar Ayarlar = Ayarlar{
 	VeritabaniAdresi: "root@localhost/stajtakip",
 	LogDosyasi:       "stajtakip.log",
 	GerekenStajGunu:  57,
+	MaxIstekBoyutu:   32000000,
 }
 
 func AyarlariOku(dosya string) error {
@@ -58,4 +60,8 @@ func LogDosyasi() string {
 
 func GerekenStajGunu() int {
 	return ayarlar.GerekenStajGunu
+}
+
+func MaxIstekBoyutu() int64 {
+	return ayarlar.MaxIstekBoyutu
 }

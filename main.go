@@ -4,6 +4,7 @@ import (
 	"log"
 	"stajtakip/cfg"
 	"stajtakip/database"
+	"stajtakip/routes"
 
 	"github.com/sirupsen/logrus"
 )
@@ -19,6 +20,9 @@ func main() {
 
 	// Logrus'u ayarla
 	LogBaslat(cfg.LogDosyasi())
+
+	// Max istek boyutunu ayarla
+	routes.Ayarla(cfg.MaxIstekBoyutu())
 
 	srvAddr := cfg.SunucuAdresi()
 	srv := NewStajServer(srvAddr)
