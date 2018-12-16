@@ -10,10 +10,10 @@ type Staj struct {
 	Bitis     string
 }
 
-func (stj *Staj) Insert(db *StajDatabase) error {
+func (stj *Staj) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO stajlar (`OgrenciNo`, `Sinif`, `Kurum`, `Sehir`, `Konu`, `Baslangic`, `Bitis`) VALUES (?, ?, ?, ?, ?, DATE ?, DATE ?);"
 
-	result, err := db.db.Exec(sql, stj.No, stj.Sinif, stj.Kurum, stj.Sehir, stj.Konu, stj.Baslangic, stj.Bitis)
+	result, err := conn.db.Exec(sql, stj.No, stj.Sinif, stj.Kurum, stj.Sehir, stj.Konu, stj.Baslangic, stj.Bitis)
 	if err != nil {
 		return err
 	}

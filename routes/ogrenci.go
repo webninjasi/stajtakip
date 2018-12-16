@@ -11,7 +11,7 @@ import (
 )
 
 type OgrenciEkle struct {
-	DB *database.StajDatabase
+	Conn *database.Connection
 }
 
 // Verilen parametrelere göre veritabanına bir öğrenci eklemeye çalışır
@@ -54,7 +54,7 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ogr := database.Ogrenci{no, ad, soyad, hangiOgretim}
-	if err := ogr.Insert(sh.DB); err != nil {
+	if err := ogr.Insert(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Öğrenci eklenirken veritabanında bir hata oluştu!")

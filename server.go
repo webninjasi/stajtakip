@@ -12,10 +12,10 @@ type StajServer struct {
 	mux    *http.ServeMux
 }
 
-func (s *StajServer) SetHandlers(db *database.StajDatabase) {
+func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/", routes.Index)
-	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{db})
-	s.mux.Handle("/staj-ekle", routes.StajEkle{db})
+	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{conn})
+	s.mux.Handle("/staj-ekle", routes.StajEkle{conn})
 }
 
 func (s *StajServer) Run() error {

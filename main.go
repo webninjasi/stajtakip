@@ -23,23 +23,23 @@ func main() {
 	srvAddr := cfg.SunucuAdresi()
 	srv := NewStajServer(srvAddr)
 
-	datasrc := cfg.VeritabaniAdresi()
-	if datasrc == "" {
+	dbAddr := cfg.VeritabaniAdresi()
+	if dbAddr == "" {
 		logrus.Error("Veritabanı adresi belirtilmemiş!")
 		return
 	}
 
-	db := database.NewStajVeritabani(datasrc)
+	conn := database.NewConnection(dbAddr)
 	dbOk := make(chan bool)
 	errChan := make(chan error)
 
 	go func() {
 		logrus.WithFields(logrus.Fields{
-			"data-source": datasrc,
+			"database-address": dbAddr,
 		}).Info("Veritabanına bağlanılıyor...")
 
 		// Veritabanına bağlantıyı sağla
-		if err := db.Connect(dbOk); err != nil {
+		if err := conn.Connect(dbOk); err != nil {
 			logrus.WithFields(logrus.Fields{
 				"err": err,
 			}).Error("Veritabanı bağlantısında bir hata meydana geldi!")
@@ -50,7 +50,7 @@ func main() {
 	go func() {
 		<-dbOk // Veritabanı bağlantısını bekle
 
-		srv.SetHandlers(db)
+		srv.SetHandlers(conn)
 
 		logrus.WithFields(logrus.Fields{
 			"addr": srvAddr,

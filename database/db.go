@@ -15,19 +15,19 @@ const DB_PING_TIMER = 1 * time.Minute
 
 var ErrAlreadyConnected error = errors.New("Zaten veritabanı sunucusuna bağlı!")
 
-type StajDatabase struct {
+type Connection struct {
 	db      *sql.DB
 	datasrc string
 }
 
-func NewStajVeritabani(datasrc string) *StajDatabase {
-	return &StajDatabase{
+func NewConnection(datasrc string) *Connection {
+	return &Connection{
 		db:      nil,
 		datasrc: datasrc,
 	}
 }
 
-func (sv *StajDatabase) Connect(ok chan<- bool) error {
+func (sv *Connection) Connect(ok chan<- bool) error {
 	// Veritabanına zaten bağlı
 	if sv.db != nil {
 		return ErrAlreadyConnected

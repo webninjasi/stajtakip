@@ -11,10 +11,10 @@ type Ogrenci struct {
 	Ogretim int
 }
 
-func (ogr *Ogrenci) Insert(db *StajDatabase) error {
+func (ogr *Ogrenci) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO ogrenciler (`No`, `Ad`, `Soyad`, `Ogretim`) VALUES (?, ?, ?, ?);"
 
-	result, err := db.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
+	result, err := conn.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
 	if err != nil {
 		return err
 	}
@@ -27,10 +27,10 @@ func (ogr *Ogrenci) Insert(db *StajDatabase) error {
 	return nil
 }
 
-func OgrenciListesi(db *StajDatabase) ([]*Ogrenci, error) {
+func OgrenciListesi(conn *Connection) ([]*Ogrenci, error) {
 	const sql string = "SELECT * FROM ogrenciler WHERE KabulEdilen >= ?"
 
-	q, err := db.db.Query(sql, cfg.GerekenStajGunu())
+	q, err := conn.db.Query(sql, cfg.GerekenStajGunu())
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 type StajEkle struct {
-	DB *database.StajDatabase
+	Conn *database.Connection
 }
 
 // Verilen parametrelere göre veritabanına bir Staj eklemeye çalışır
@@ -74,7 +74,7 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ogr := database.Staj{ogrno, sinif, kurum, sehir, konu, baslangic, bitis}
-	if err := ogr.Insert(sh.DB); err != nil {
+	if err := ogr.Insert(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Staj eklenirken veritabanında bir hata oluştu!")
