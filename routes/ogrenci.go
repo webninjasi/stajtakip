@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"stajtakip/database"
-	"strconv"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -29,31 +27,35 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var hangiOgretim int
+	var no, ogretim int
+	var ad, soyad string
+	var err error
 
-	ogrno := strings.TrimSpace(r.PostFormValue("no"))
-	ad := strings.TrimSpace(r.PostFormValue("ad"))
-	soyad := strings.TrimSpace(r.PostFormValue("soyad"))
-	ogretim := strings.TrimSpace(r.PostFormValue("ogretim"))
-
-	if len(ad) < 1 || len(soyad) < 1 {
-		http.Error(w, "Öğrenci adı veya soyadı eksik olmamalı!", http.StatusBadRequest)
-		return
-	}
-
-	no, err := strconv.Atoi(ogrno)
+	ad, err = formStr(r.PostFormValue("ad"))
 	if err != nil {
-		http.Error(w, "Öğrenci no bir sayı olmalı!", http.StatusBadRequest)
+		http.Error(w, "Öğrenci adı eksik veya yanlış!", http.StatusBadRequest)
 		return
 	}
 
-	hangiOgretim, err = strconv.Atoi(ogretim)
+	soyad, err = formStr(r.PostFormValue("soyad"))
 	if err != nil {
-		http.Error(w, "Öğrenci no bir sayı olmalı!", http.StatusBadRequest)
+		http.Error(w, "Öğrenci soyadı eksik veya yanlış!", http.StatusBadRequest)
 		return
 	}
 
-	ogr := database.Ogrenci{no, ad, soyad, hangiOgretim}
+	no, err = formSayi(r.PostFormValue("no"))
+	if err != nil {
+		http.Error(w, "Öğrenci no eksik veya yanlış!", http.StatusBadRequest)
+		return
+	}
+
+	ogretim, err = formSayi(r.PostFormValue("ogretim"))
+	if err != nil {
+		http.Error(w, "Öğretim eksik veya yanlış!", http.StatusBadRequest)
+		return
+	}
+
+	ogr := database.Ogrenci{no, ad, soyad, ogretim}
 	if err := ogr.Insert(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
