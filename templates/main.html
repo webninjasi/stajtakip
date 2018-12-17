@@ -1,0 +1,132 @@
+{{define "main"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/css/open-iconic-bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/css/stajtakip.css">
+
+  <title>{{.Title}}</title>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <main role="main" class="col-9 main">
+        {{template "content"}}
+      </main>
+      <nav class="col-3 bg-light sidebar">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a href="/" class="nav-link">
+              <span class="oi oi-bar-chart"></span>
+              Raporlar
+            </a>
+          </li>
+        </ul>
+
+        <h5 class="sidebar-heading">
+          <span class="oi oi-people"></span>
+          Öğrenci
+        </h5>
+        <ul class="nav flex-column sidebar-group">
+          <li class="nav-item">
+            <a href="/ogrenci-ekle" class="nav-link">
+              <span class="oi oi-plus"></span>
+              Ekle
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/ogrenci-belge-ekle" class="nav-link">
+              <span class="oi oi-document"></span>
+              Belge Ekle
+            </a>
+          </li>
+          <li class="nav-item">
+            <form class="form-inline" method="POST" action="/ogrenci-ara">
+              <div class="input-group ml-3 mt-1">
+                <input class="form-control" type="number" placeholder="Öğrenci No" aria-label="Öğrenci No" min="0" name="no">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-success" type="submit" aria-label="Sorgula">
+                    <span class="oi oi-magnifying-glass" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </li>
+        </ul>
+
+        <h5 class="sidebar-heading">
+          <span class="oi oi-briefcase"></span>
+          Staj
+        </h5>
+        <ul class="nav flex-column sidebar-group">
+          <li class="nav-item">
+            <a href="/staj-ekle" class="nav-link">
+              <span class="oi oi-plus"></span>
+              Ekle
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/staj-degerlendir" class="nav-link">
+              <span class="oi oi-check"></span>
+              Değerlendir
+            </a>
+          </li>
+        </ul>
+
+        <h5 class="sidebar-heading">
+          <span class="oi oi-clipboard"></span>
+          Listeler
+        </h5>
+        <ul class="nav flex-column sidebar-group">
+          <li class="nav-item">
+            <a href="/ogrenci-listele" class="nav-link">
+              <span class="oi oi-list"></span>
+              Stajı Bitenler
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/mulakat-listele" class="nav-link">
+              <span class="oi oi-list-rich"></span>
+              Mülakat
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/sonuc-listele" class="nav-link">
+              <span class="oi oi-spreadsheet"></span>
+              Mülakat Sonuçları
+            </a>
+          </li>
+        </ul>
+
+        <h5 class="sidebar-heading">
+          <span class="oi oi-cog"></span>
+          Ayarlar
+        </h5>
+        <ul class="nav flex-column sidebar-group">
+          <li class="nav-item">
+            <a href="/konular" class="nav-link">
+              <span class="oi oi-project"></span>
+              Konular
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="/komisyon" class="nav-link">
+              <span class="oi oi-comment-square"></span>
+              Komisyon
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <script src="/assets/js/jquery-3.3.1.min.js"></script>
+  <script src="/assets/js/bootstrap.bundle.min.js"></script>
+  <script src="/assets/js/stajtakip.js"></script>
+</body>
+</html>
+{{end}}

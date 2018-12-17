@@ -1,0 +1,74 @@
+{{define "content"}}
+<div class="main-title">
+  <h1>Öğrenci Ekle</h1>
+</div>
+
+<div class="container">
+    <form method="POST" action="/staj-ekle">
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="no">Öğrenci No</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="no" type="number">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="kurum">Kurum</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="kurum" type="text">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="sehir">Şehir</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="sehir" type="text">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="baslangic">Başlangıç Günü</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="baslangic" type="date">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="bitis">Bitiş Günü</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="bitis" type="date">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="konu">Konu</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="konu" type="text">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="sinif">Sınıf</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="sinif" type="number" min="1" max="8">
+        </div>
+      </div>
+
+      <input class="btn btn-primary" type="submit" value="Ekle">
+    </form>
+</div>
+{{end}}

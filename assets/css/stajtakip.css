@@ -1,0 +1,42 @@
+.main {
+  padding: 2rem;
+}
+
+.main-title {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dedede;
+  margin-bottom: 1em;
+}
+
+.sidebar {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  position: fixed;
+  border-left: 1px solid #ededed;
+}
+
+.sidebar-heading {
+  align-items: center;
+  color: #777777;
+  margin-top: 2rem;
+  padding-left: 1rem;
+}
+
+.sidebar a {
+  color: #444444;
+  font-weight: normal;
+}
+
+.sidebar a:hover {
+  font-weight: bold;
+}
+
+.sidebar-heading > .oi, .sidebar a > .oi {
+  margin-right: 1rem;
+}
+
+.sidebar-group {
+  border-top: 1px solid #ccc;
+}

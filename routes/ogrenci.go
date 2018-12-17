@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"stajtakip/database"
+	"stajtakip/templates"
 
 	"github.com/sirupsen/logrus"
 )
+
+var tpl_ogrenci_ekle = templates.Load("templates/ogrenci-ekle.html")
 
 type OgrenciEkle struct {
 	Conn *database.Connection
@@ -14,6 +17,17 @@ type OgrenciEkle struct {
 
 // Verilen parametrelere göre veritabanına bir öğrenci eklemeye çalışır
 func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		err := tpl_ogrenci_ekle.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Öğrenci Ekle"})
+		if err != nil {
+			http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("Şablon çalıştırılamadı!")
+		}
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
 		return
@@ -44,13 +58,13 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	no, err = formSayi(r.PostFormValue("no"))
-	if err != nil {
+	if err != nil || (no < 0) {
 		http.Error(w, "Öğrenci no eksik veya yanlış!", http.StatusBadRequest)
 		return
 	}
 
 	ogretim, err = formSayi(r.PostFormValue("ogretim"))
-	if err != nil {
+	if err != nil || (ogretim != 0 && ogretim != 1) {
 		http.Error(w, "Öğretim eksik veya yanlış!", http.StatusBadRequest)
 		return
 	}

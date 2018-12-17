@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"stajtakip/database"
+	"stajtakip/templates"
 
 	"github.com/sirupsen/logrus"
 )
+
+var tpl_staj_ekle = templates.Load("templates/staj-ekle.html")
 
 type StajEkle struct {
 	Conn *database.Connection
@@ -14,6 +17,17 @@ type StajEkle struct {
 
 // Verilen parametrelere göre veritabanına bir Staj eklemeye çalışır
 func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		err := tpl_staj_ekle.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Staj Ekle"})
+		if err != nil {
+			http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("Şablon çalıştırılamadı!")
+		}
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
 		return
