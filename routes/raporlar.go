@@ -19,8 +19,8 @@ type Raporlar struct {
 func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		w.WriteHeader(http.StatusNotFound)
-		
-		err := tpl_404.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Sayfa Bulunamadı"})
+
+		err := tpl_404.ExecuteTemplate(w, "main", templates.NewMain("StajTakip - Sayfa Bulunamadı"))
 		if err != nil {
 			http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
 			logrus.WithFields(logrus.Fields{
@@ -35,7 +35,9 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := tpl_raporlar.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Raporlar"})
+	data := templates.NewMain("StajTakip - Raporlar")
+
+	err := tpl_raporlar.ExecuteTemplate(w, "main", data)
 	if err != nil {
 		http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
 		logrus.WithFields(logrus.Fields{

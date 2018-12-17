@@ -4,6 +4,9 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 var MaxReqSize int64 = 32000000
@@ -38,4 +41,13 @@ func formStr(deger string) (string, error) {
 	}
 
 	return str, nil
+}
+
+func sablonHatasi(w http.ResponseWriter, err error) {
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Şablon çalıştırılamadı!")
+		http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
+	}
 }

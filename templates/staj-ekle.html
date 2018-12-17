@@ -3,6 +3,10 @@
   <h1>Öğrenci Ekle</h1>
 </div>
 
+{{if ne .Alert ""}}
+  {{template "alert" .}}
+{{end}}
+
 <div class="container">
     <form method="POST" action="/staj-ekle">
       <div class="form-group row">

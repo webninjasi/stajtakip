@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"stajtakip/database"
 	"stajtakip/templates"
@@ -17,14 +16,10 @@ type OgrenciEkle struct {
 
 // Verilen parametrelere göre veritabanına bir öğrenci eklemeye çalışır
 func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	data := templates.NewMain("StajTakip - Öğrenci Ekle")
+
 	if r.Method == http.MethodGet {
-		err := tpl_ogrenci_ekle.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Öğrenci Ekle"})
-		if err != nil {
-			http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Warn("Şablon çalıştırılamadı!")
-		}
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data))
 		return
 	}
 
@@ -37,7 +32,8 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Warn("Öğrenci ekleme formu okunamadı!")
-		http.Error(w, "Öğrenci bilgileri formunda bir hata var!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Error("Öğrenci bilgileri formunda bir hata var!")))
 		return
 	}
 
@@ -47,25 +43,29 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ad, err = formStr(r.PostFormValue("ad"))
 	if err != nil {
-		http.Error(w, "Öğrenci adı eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci adı eksik veya yanlış!")))
 		return
 	}
 
 	soyad, err = formStr(r.PostFormValue("soyad"))
 	if err != nil {
-		http.Error(w, "Öğrenci soyadı eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci soyadı eksik veya yanlış!")))
 		return
 	}
 
 	no, err = formSayi(r.PostFormValue("no"))
 	if err != nil || (no < 0) {
-		http.Error(w, "Öğrenci no eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
 		return
 	}
 
 	ogretim, err = formSayi(r.PostFormValue("ogretim"))
 	if err != nil || (ogretim != 0 && ogretim != 1) {
-		http.Error(w, "Öğretim eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Warning("Öğretim eksik veya yanlış!")))
 		return
 	}
 
@@ -74,14 +74,12 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Öğrenci eklenirken veritabanında bir hata oluştu!")
-		http.Error(w, "Veritabanında bir hata oluştu!", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
 		return
 	}
 
-	fmt.Fprintf(w, "Öğrenci veritabanına başarıyla eklendi!")
-
-	// TODO daha fazla field (isteğe bağlı olanlar vb.)
-	// TODO fieldların max değerlerini vb. kontrol et
+	w.WriteHeader(http.StatusOK)
+	sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Info("Öğrenci veritabanına başarıyla eklendi!")))
+	// TODO eklenen öğrencinin detay bilgisine giden link ekle
 }
-
-// TODO öğrenci bilgileri düzenleme

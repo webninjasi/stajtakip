@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"stajtakip/database"
 	"stajtakip/templates"
@@ -17,14 +16,10 @@ type StajEkle struct {
 
 // Verilen parametrelere göre veritabanına bir Staj eklemeye çalışır
 func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	data := templates.NewMain("StajTakip - Öğrenci Ekle")
+
 	if r.Method == http.MethodGet {
-		err := tpl_staj_ekle.ExecuteTemplate(w, "main", templates.Main{"StajTakip - Staj Ekle"})
-		if err != nil {
-			http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Warn("Şablon çalıştırılamadı!")
-		}
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data))
 		return
 	}
 
@@ -37,7 +32,8 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Warn("Staj ekleme formu okunamadı!")
-		http.Error(w, "Formda bir hata var!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Staj ekleme formunda bir hata var!")))
 		return
 	}
 
@@ -47,43 +43,50 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ogrno, err = formSayi(r.PostFormValue("no"))
 	if err != nil {
-		http.Error(w, "Öğrenci no eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
 		return
 	}
 
 	sinif, err = formSayi(r.PostFormValue("sinif"))
 	if err != nil {
-		http.Error(w, "Sınıf eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Sınıf eksik veya yanlış!")))
 		return
 	}
 
 	kurum, err = formStr(r.PostFormValue("kurum"))
 	if err != nil {
-		http.Error(w, "Kurum eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Kurum eksik veya yanlış!")))
 		return
 	}
 
 	sehir, err = formStr(r.PostFormValue("sehir"))
 	if err != nil {
-		http.Error(w, "Şehir eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Şehir eksik veya yanlış!")))
 		return
 	}
 
 	konu, err = formStr(r.PostFormValue("konu"))
 	if err != nil {
-		http.Error(w, "Konu eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Konu eksik veya yanlış!")))
 		return
 	}
 
 	baslangic, err = formStr(r.PostFormValue("baslangic"))
 	if err != nil {
-		http.Error(w, "Başlangıç tarihi eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Başlangıç tarihi eksik veya yanlış!")))
 		return
 	}
 
 	bitis, err = formStr(r.PostFormValue("bitis"))
 	if err != nil {
-		http.Error(w, "Bitiş tarihi eksik veya yanlış!", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Bitiş tarihi eksik veya yanlış!")))
 		return
 	}
 
@@ -92,15 +95,15 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Staj eklenirken veritabanında bir hata oluştu!")
-		http.Error(w, "Veritabanında bir hata oluştu!", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
 		return
 	}
-	fmt.Fprintf(w, "Staj veritabanına başarıyla eklendi!")
 
-	// TODO daha fazla field (isteğe bağlı olanlar vb.)
-	// TODO fieldların max değerlerini vb. kontrol et
+	w.WriteHeader(http.StatusOK)
+	sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Info("Staj bilgisi veritabanına başarıyla eklendi!")))
+
+	// TODO Eski değerleri inputlara ata
 }
-
-// TODO öğrenci bilgileri düzenleme
 
 // TODO dgs öğrencileri için staj tablosunda sınıfı 0 olarak seç

@@ -15,7 +15,7 @@
   <div class="container-fluid">
     <div class="row">
       <main role="main" class="col-9 main">
-        {{template "content"}}
+        {{template "content" .}}
       </main>
       <nav class="col-3 bg-light sidebar">
         <ul class="nav flex-column">
@@ -129,4 +129,18 @@
   <script src="/assets/js/stajtakip.js"></script>
 </body>
 </html>
+{{end}}
+
+{{define "alert"}}
+<div class="alert alert-{{.Alert}}" role="alert">
+  {{if eq .Alert "danger"}}
+  <h4 class="alert-heading"><span class="oi oi-x"></span> Hata</h4>
+  {{else if eq .Alert "warning"}}
+  <h4 class="alert-heading"><span class="oi oi-warning"></span> Uyarı</h4>
+  {{else if eq .Alert "info"}}
+  <h4 class="alert-heading"><span class="oi oi-info"></span> Bilgi</h4>
+  {{end}}
+
+  {{.AlertMessage}}
+</div>
 {{end}}
