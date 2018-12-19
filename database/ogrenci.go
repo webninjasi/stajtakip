@@ -12,7 +12,7 @@ type Ogrenci struct {
 }
 
 func (ogr *Ogrenci) Insert(conn *Connection) error {
-	const sql string = "INSERT INTO ogrenciler (`No`, `Ad`, `Soyad`, `Ogretim`) VALUES (?, ?, ?, ?);"
+	const sql string = "INSERT INTO ogrenci (No, Ad, Soyad, Ogretim) VALUES (?, ?, ?, ?);"
 
 	result, err := conn.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
 	if err != nil {
@@ -27,8 +27,12 @@ func (ogr *Ogrenci) Insert(conn *Connection) error {
 	return nil
 }
 
-func OgrenciListesi(conn *Connection) ([]*Ogrenci, error) {
-	const sql string = "SELECT * FROM ogrenciler WHERE KabulEdilen >= ?"
+func StajiTamamOgrenciler(conn *Connection) ([]*Ogrenci, error) {
+	const sql string = `SELECT o.No, o.Ad, o.Soyad, o.Ogretim
+FROM ogrenci AS o, staj AS s WHERE o.No = s.OgrenciNo
+GROUP BY o.No, o.Ad, o.Soyad, o.Ogretim
+HAVING SUM(s.KabulGun) >= ? AND SUM(s.ToplamGun) >= 60`
+// TODO DenkStaj öğrencilerini de say?
 
 	q, err := conn.db.Query(sql, cfg.GerekenStajGunu())
 	if err != nil {

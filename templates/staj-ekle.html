@@ -38,6 +38,19 @@
 
       <div class="form-group row">
         <div class="col-2 form-label">
+          <label for="konu">Konu</label>
+        </div>
+        <div class="col-10">
+          <select class="custom-select" name="konu">
+            {{range .Vars.Konular}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col-2 form-label">
           <label for="baslangic">Başlangıç Günü</label>
         </div>
         <div class="col-10">
@@ -56,19 +69,19 @@
 
       <div class="form-group row">
         <div class="col-2 form-label">
-          <label for="konu">Konu</label>
+          <label for="sinif">Sınıf</label>
         </div>
         <div class="col-10">
-          <input class="form-control" name="konu" type="text">
+          <input class="form-control" name="sinif" type="number" min="1" max="8">
         </div>
       </div>
 
       <div class="form-group row">
         <div class="col-2 form-label">
-          <label for="sinif">Sınıf</label>
+          <label for="toplamgun">Toplam Gün</label>
         </div>
         <div class="col-10">
-          <input class="form-control" name="sinif" type="number" min="1" max="8">
+          <input class="form-control" name="toplamgun" type="number" min="1">
         </div>
       </div>
 

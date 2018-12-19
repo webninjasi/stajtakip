@@ -10,6 +10,7 @@ type Main struct {
   Title string
   Alert string
   AlertMessage string
+  Vars interface{}
 }
 
 func (m Main) Error(msg string) Main {

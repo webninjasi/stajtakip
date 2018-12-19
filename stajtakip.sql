@@ -16,56 +16,95 @@
 CREATE DATABASE IF NOT EXISTS `stajtest` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `stajtest`;
 
--- Dumping structure for table stajtest.gorevliler
-CREATE TABLE IF NOT EXISTS `gorevliler` (
+-- Dumping structure for table stajtest.denkstaj
+CREATE TABLE IF NOT EXISTS `denkstaj` (
+  `OgrenciNo` int(11) NOT NULL,
+  `KurumAdi` varchar(50) NOT NULL,
+  `OncekiOkul` varchar(50) NOT NULL,
+  `KabulGun` tinyint(3) unsigned NOT NULL,
+  `ToplamGun` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`OgrenciNo`),
+  CONSTRAINT `FK_DenkStaj_ogrenci` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenci` (`No`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin5;
+
+-- Data exporting was unselected.
+-- Dumping structure for table stajtest.komisyon
+CREATE TABLE IF NOT EXISTS `komisyon` (
   `AdSoyad` varchar(50) NOT NULL,
-  `Komisyon` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `Dahil` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`AdSoyad`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.
--- Dumping structure for table stajtest.mulakatlar
-CREATE TABLE IF NOT EXISTS `mulakatlar` (
-  `OgrenciNo` int(11) NOT NULL,
-  `MulatakTarihi` datetime NOT NULL,
-  `GörevliUye1` varchar(50) NOT NULL,
-  `GorevliUye2` varchar(50) NOT NULL,
-  PRIMARY KEY (`MulatakTarihi`),
-  KEY `OgrNo` (`OgrenciNo`),
-  KEY `Görevli` (`GörevliUye1`),
-  KEY `Gorevli2` (`GorevliUye2`),
-  CONSTRAINT `Gorevli2` FOREIGN KEY (`GorevliUye2`) REFERENCES `gorevliler` (`AdSoyad`),
-  CONSTRAINT `Görevli` FOREIGN KEY (`GörevliUye1`) REFERENCES `gorevliler` (`AdSoyad`),
-  CONSTRAINT `OgrNo` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenciler` (`No`)
+-- Dumping structure for table stajtest.konu
+CREATE TABLE IF NOT EXISTS `konu` (
+  `Baslik` varchar(50) NOT NULL,
+  `Aktif` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`Baslik`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.
--- Dumping structure for table stajtest.ogrenciler
-CREATE TABLE IF NOT EXISTS `ogrenciler` (
+-- Dumping structure for table stajtest.mulakat
+CREATE TABLE IF NOT EXISTS `mulakat` (
+  `OgrenciNo` int(11) NOT NULL,
+  `StajBaslangic` date NOT NULL,
+  `TarihSaat` datetime NOT NULL,
+  `KomisyonUye1` varchar(50) NOT NULL,
+  `KomisyonUye2` varchar(50) NOT NULL,
+  `PuanDevam` tinyint(2) unsigned NOT NULL,
+  `PuanCaba` tinyint(2) unsigned NOT NULL,
+  `PuanVakit` tinyint(2) unsigned NOT NULL,
+  `PuanAmireDavranis` tinyint(2) unsigned NOT NULL,
+  `PuanIsArkadasaDavranis` tinyint(2) unsigned NOT NULL,
+  `PuanProje` tinyint(3) unsigned NOT NULL,
+  `PuanDuzen` tinyint(3) unsigned NOT NULL,
+  `PuanSunum` tinyint(3) unsigned NOT NULL,
+  `PuanIcerik` tinyint(3) unsigned NOT NULL,
+  `PuanMulakat` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`OgrenciNo`,`StajBaslangic`),
+  KEY `FK_mulakat_komisyon` (`KomisyonUye1`),
+  KEY `FK_mulakat_komisyon_2` (`KomisyonUye2`),
+  CONSTRAINT `FK_mulakat_komisyon` FOREIGN KEY (`KomisyonUye1`) REFERENCES `komisyon` (`AdSoyad`),
+  CONSTRAINT `FK_mulakat_komisyon_2` FOREIGN KEY (`KomisyonUye2`) REFERENCES `komisyon` (`AdSoyad`),
+  CONSTRAINT `FK_mulakat_staj` FOREIGN KEY (`OgrenciNo`, `StajBaslangic`) REFERENCES `staj` (`OgrenciNo`, `Baslangic`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin5;
+
+-- Data exporting was unselected.
+-- Dumping structure for table stajtest.ogrenci
+CREATE TABLE IF NOT EXISTS `ogrenci` (
   `No` int(11) NOT NULL,
   `Ad` varchar(50) NOT NULL,
   `Soyad` varchar(50) NOT NULL,
-  `ToplamStaj` tinyint(2) unsigned NOT NULL DEFAULT '0',
-  `KabulEdilen` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `Ogretim` tinyint(1) unsigned NOT NULL,
-  `SonStajTarihi` date DEFAULT NULL,
   PRIMARY KEY (`No`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.
--- Dumping structure for table stajtest.stajlar
-CREATE TABLE IF NOT EXISTS `stajlar` (
+-- Dumping structure for table stajtest.ogrenciek
+CREATE TABLE IF NOT EXISTS `ogrenciek` (
   `OgrenciNo` int(11) NOT NULL,
-  `Kurum` varchar(50) NOT NULL,
+  `Dosya` varchar(50) NOT NULL,
+  PRIMARY KEY (`OgrenciNo`),
+  CONSTRAINT `FK_OgrenciEk_ogrenci` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenci` (`No`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin5;
+
+-- Data exporting was unselected.
+-- Dumping structure for table stajtest.staj
+CREATE TABLE IF NOT EXISTS `staj` (
+  `OgrenciNo` int(11) NOT NULL,
+  `KurumAdi` varchar(50) NOT NULL,
   `Sehir` varchar(50) NOT NULL,
+  `KonuBaslik` varchar(50) NOT NULL,
   `Baslangic` date NOT NULL,
   `Bitis` date NOT NULL,
-  `Konu` varchar(50) NOT NULL,
-  `Sinif` tinyint(1) unsigned NOT NULL,
-  `KabulEdilen` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `Sinif` tinyint(3) unsigned NOT NULL,
+  `ToplamGun` tinyint(3) unsigned NOT NULL,
+  `KabulGun` tinyint(3) unsigned DEFAULT NULL,
   `Degerlendirildi` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`OgrenciNo`,`Baslangic`),
-  CONSTRAINT `OgrenciNo` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenciler` (`No`)
+  KEY `FK_staj_konu` (`KonuBaslik`),
+  CONSTRAINT `FK__ogrenci` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenci` (`No`),
+  CONSTRAINT `FK_staj_konu` FOREIGN KEY (`KonuBaslik`) REFERENCES `konu` (`Baslik`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.

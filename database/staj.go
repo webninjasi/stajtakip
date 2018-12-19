@@ -1,19 +1,22 @@
 package database
 
 type Staj struct {
-	No        int
-	Sinif     int
-	Kurum     string
+	OgrenciNo        int
+	KurumAdi     string
 	Sehir     string
-	Konu      string
-	Baslangic string
-	Bitis     string
+	KonuBaslik     string
+	Baslangic      string
+	Bitis string
+	Sinif     int
+	ToplamGun int
+	KabulGun int
+	Degerlendirildi bool
 }
 
 func (stj *Staj) Insert(conn *Connection) error {
-	const sql string = "INSERT INTO stajlar (`OgrenciNo`, `Sinif`, `Kurum`, `Sehir`, `Konu`, `Baslangic`, `Bitis`) VALUES (?, ?, ?, ?, ?, ?, ?);"
+	const sql string = "INSERT INTO staj (OgrenciNo, KurumAdi, Sehir, KonuBaslik, Baslangic, Bitis, Sinif, ToplamGun) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
 
-	result, err := conn.db.Exec(sql, stj.No, stj.Sinif, stj.Kurum, stj.Sehir, stj.Konu, stj.Baslangic, stj.Bitis)
+	result, err := conn.db.Exec(sql, stj.OgrenciNo, stj.KurumAdi, stj.Sehir, stj.KonuBaslik, stj.Baslangic, stj.Bitis, stj.Sinif, stj.ToplamGun)
 	if err != nil {
 		return err
 	}
@@ -24,6 +27,31 @@ func (stj *Staj) Insert(conn *Connection) error {
 	}
 
 	return nil
+}
+
+func KonuListesi(conn *Connection) ([]string, error) {
+		const sql string = `SELECT Baslik FROM Konu WHERE Aktif=1`
+		// TODO AktifKonular isminde view oluştur
+
+		q, err := conn.db.Query(sql)
+		if err != nil {
+			return nil, err
+		}
+		defer q.Close()
+
+		liste := []string{}
+		for q.Next() {
+			var baslik string
+
+			err = q.Scan(&baslik)
+			if err != nil {
+				return nil, err
+			}
+
+			liste = append(liste, baslik)
+		}
+
+		return liste, nil
 }
 
 // TODO update, delete fonksiyonları
