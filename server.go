@@ -22,7 +22,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 
 	// Öğrenci
 	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{conn})
-	s.mux.Handle("/ogrenci-listele", routes.TODO{conn}) // Stajı bitenler
+	s.mux.Handle("/ogrenci-listele", routes.OgrenciListesi{conn}) // Stajı bitenler
 	s.mux.Handle("/ogrenci-listele-pdf", routes.TODO{conn})
 	s.mux.Handle("/ogrenci-listele-xls", routes.TODO{conn})
 	s.mux.Handle("/ogrenci-belge-ekle", routes.TODO{conn}) // DGS için pdf

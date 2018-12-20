@@ -27,12 +27,12 @@ func (ogr *Ogrenci) Insert(conn *Connection) error {
 	return nil
 }
 
-func StajiTamamOgrenciler(conn *Connection) ([]*Ogrenci, error) {
+func StajiTamamOgrenciler(conn *Connection) ([]Ogrenci, error) {
 	const sql string = `SELECT o.No, o.Ad, o.Soyad, o.Ogretim
 FROM ogrenci AS o, staj AS s WHERE o.No = s.OgrenciNo
 GROUP BY o.No, o.Ad, o.Soyad, o.Ogretim
 HAVING SUM(s.KabulGun) >= ? AND SUM(s.ToplamGun) >= 60`
-// TODO DenkStaj öğrencilerini de say?
+	// TODO DenkStaj öğrencilerini de say?
 
 	q, err := conn.db.Query(sql, cfg.GerekenStajGunu())
 	if err != nil {
@@ -40,7 +40,7 @@ HAVING SUM(s.KabulGun) >= ? AND SUM(s.ToplamGun) >= 60`
 	}
 	defer q.Close()
 
-	liste := []*Ogrenci{}
+	liste := []Ogrenci{}
 	for q.Next() {
 		var ogr Ogrenci
 
@@ -49,7 +49,7 @@ HAVING SUM(s.KabulGun) >= ? AND SUM(s.ToplamGun) >= 60`
 			return nil, err
 		}
 
-		liste = append(liste, &ogr)
+		liste = append(liste, ogr)
 	}
 
 	return liste, nil
