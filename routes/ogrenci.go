@@ -63,7 +63,7 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ogretim, err = formSayi(r.PostFormValue("ogretim"))
-	if err != nil || (ogretim != 0 && ogretim != 1) {
+	if err != nil || (ogretim != 2 && ogretim != 1) {
 		w.WriteHeader(http.StatusBadRequest)
 		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Warning("Öğretim eksik veya yanlış!")))
 		return
