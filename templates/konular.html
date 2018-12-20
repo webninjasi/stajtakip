@@ -1,0 +1,22 @@
+{{define "content"}}
+<div class="main-title">
+  <h1>Konular Listesi</h1>
+</div>
+
+<div class="container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Konular</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Vars.Konular}}
+        <tr>
+          <td scope="row">{{.}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+</div>
+{{end}}
