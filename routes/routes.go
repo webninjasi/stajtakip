@@ -2,14 +2,17 @@ package routes
 
 import (
 	"errors"
+	"net/http"
+	"stajtakip/templates"
 	"strconv"
 	"strings"
-	"net/http"
 
 	"github.com/sirupsen/logrus"
 )
 
 var MaxReqSize int64 = 32000000
+
+var tpl_mesaj = templates.Load("templates/mesaj.html")
 
 func Ayarla(mrs int64) {
 	if mrs > 0 {

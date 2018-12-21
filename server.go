@@ -33,7 +33,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/konu-listele", routes.TODO{conn})     // eklerken ajax ile çek?
 	s.mux.Handle("/kurum-listele", routes.TODO{conn})    // eklerken ajax ile çek?
 	s.mux.Handle("/onceki-staj-ekle", routes.TODO{conn}) // DGS/Yatay Geçiş
-	s.mux.Handle("/konular", routes.TODO{conn})
+	s.mux.Handle("/konular", routes.KonuListesi{conn})   // Konu listesi
 	s.mux.Handle("/konu-ekle", routes.TODO{conn})
 	s.mux.Handle("/konu-sil", routes.TODO{conn})
 	s.mux.Handle("/konu-guncelle", routes.TODO{conn})
@@ -43,9 +43,9 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/sonuc-listele", routes.TODO{conn})   // Mülakat sonuçları
 	s.mux.Handle("/sonuc-listele-pdf", routes.TODO{conn})
 	s.mux.Handle("/sonuc-listele-xls", routes.TODO{conn})
-	s.mux.Handle("/staj-degerlendir", routes.TODO{conn}) // Mülakat sonucu ekle
-	s.mux.Handle("/komisyon", routes.TODO{conn})
-	s.mux.Handle("/komisyon-ekle", routes.TODO{conn})
+	s.mux.Handle("/staj-degerlendir", routes.TODO{conn})    // Mülakat sonucu ekle
+	s.mux.Handle("/komisyon", routes.KomisyonListesi{conn}) // Komisyon Listesi
+	s.mux.Handle("/komisyon-ekle", routes.KomisyonEkle{conn})
 	s.mux.Handle("/komisyon-cikar", routes.TODO{conn})
 	s.mux.Handle("/komisyon-ata", routes.TODO{conn})
 

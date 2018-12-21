@@ -1,0 +1,35 @@
+{{define "content"}}
+<div class="main-title">
+  <h1>Komisyon Listesi</h1>
+</div>
+
+<div class="container">
+    <form method="POST" action="/komisyon-ekle">
+        <div class="form-group row">
+          <div class="col-2 form-label">
+            <label for="adSoyad">Ad Soyad</label>
+          </div>
+          <div class="col-10">
+            <input class="form-control" name="adSoyad" type="text">
+          </div>
+        </div>
+
+        <input class="btn btn-primary" type="submit" value="Ekle">
+    </form>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Ad Soyad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Vars.Uyeler}}
+        <tr>
+          <td scope="row">{{.}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+</div>
+{{end}}
