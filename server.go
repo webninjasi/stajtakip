@@ -25,7 +25,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/ogrenci-ekle", routes.OgrenciEkle{conn})
 	s.mux.Handle("/ogrenci-listele", routes.OgrenciListesi{conn}) // Stajı bitenler
 	s.mux.Handle("/ogrenci-listele-pdf", routes.OgrenciListesiPDF{conn})
-	s.mux.Handle("/ogrenci-listele-xls", routes.TODO{conn})
+	s.mux.Handle("/ogrenci-listele-xls", routes.OgrenciListesiXLS{conn})
 	s.mux.Handle("/ogrenci-belge-ekle", routes.OgrenciBelge{conn}) // DGS için pdf
 	s.mux.Handle("/ogrenci-ara", routes.TODO{conn})        // OgrNo -> Bilgiler, stajlar, staj bitim durumu
 
