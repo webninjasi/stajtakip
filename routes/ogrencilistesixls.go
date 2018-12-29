@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
   "strconv"
-  "fmt"
 
 	"stajtakip/database"
 
@@ -32,7 +31,6 @@ func (sh OgrenciListesiXLS) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   xlsx := excelize.NewFile()
   sheetName := xlsx.GetSheetName(1)
-  fmt.Println(sheetName)
 
   style, err := xlsx.NewStyle(`{"font":{"bold":true}}`)
   if err != nil {
