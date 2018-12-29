@@ -16,6 +16,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	// TODO giriş yapmadan erişilemesin?
 
 	s.mux.Handle("/assets/", routes.Assets)
+	s.mux.Handle("/uploads/", routes.Uploads)
 
 	// Raporlar
 	s.mux.Handle("/", routes.Raporlar{conn})
@@ -25,7 +26,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/ogrenci-listele", routes.OgrenciListesi{conn}) // Stajı bitenler
 	s.mux.Handle("/ogrenci-listele-pdf", routes.TODO{conn})
 	s.mux.Handle("/ogrenci-listele-xls", routes.TODO{conn})
-	s.mux.Handle("/ogrenci-belge-ekle", routes.TODO{conn}) // DGS için pdf
+	s.mux.Handle("/ogrenci-belge-ekle", routes.OgrenciBelge{conn}) // DGS için pdf
 	s.mux.Handle("/ogrenci-ara", routes.TODO{conn})        // OgrNo -> Bilgiler, stajlar, staj bitim durumu
 
 	// Staj
