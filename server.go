@@ -30,9 +30,6 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 
 	// Staj
 	s.mux.Handle("/staj-ekle", routes.StajEkle{conn})
-	s.mux.Handle("/konu-listele", routes.TODO{conn})     // eklerken ajax ile çek?
-	s.mux.Handle("/kurum-listele", routes.TODO{conn})    // eklerken ajax ile çek?
-	s.mux.Handle("/onceki-staj-ekle", routes.TODO{conn}) // DGS/Yatay Geçiş
 	s.mux.Handle("/konular", routes.KonuListesi{conn})   // Konu listesi
 	s.mux.Handle("/konu-ekle", routes.TODO{conn})
 	s.mux.Handle("/konu-sil", routes.TODO{conn})
