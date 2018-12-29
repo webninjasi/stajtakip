@@ -15,7 +15,7 @@ var tpl_staj_ekle = templates.Load("templates/staj-ekle.html")
 const zamanFormati = "2006-01-02"
 
 type StajEkleVars struct {
-	Konular []string
+	Konular []database.Konu
 	Kurumlar []string
 	DenkStaj bool
 }
