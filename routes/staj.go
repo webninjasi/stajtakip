@@ -16,6 +16,7 @@ const zamanFormati = "2006-01-02"
 
 type StajEkleVars struct {
 	Konular []string
+	DenkStaj bool
 }
 
 type StajEkle struct {
@@ -27,7 +28,7 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	data := templates.NewMain("StajTakip - Öğrenci Ekle")
 
 	if konular, err := database.KonuListesi(sh.Conn); err == nil {
-		data.Vars = StajEkleVars{konular}
+		data.Vars = StajEkleVars{konular, false}
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
@@ -56,6 +57,20 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	denk, err := formSayi(r.PostFormValue("denk"))
+	if err != nil {
+		http.Error(w, "Eksik bilgi!", http.StatusBadRequest)
+		return
+	}
+
+	if denk == 0 {
+		sh.NormalStajEkle(data, w, r)
+	} else {
+		sh.DenkStajEkle(data, w, r)
+	}
+}
+
+func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request) {
 	var ogrno, sinif, toplamgun int
 	var kurum, sehir, konu, baslangic, bitis string
 	var err error
@@ -146,4 +161,55 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO Eski değerleri inputlara ata
 }
 
-// TODO dgs öğrencileri için staj tablosunda sınıfı 0 olarak seç
+func (sh StajEkle) DenkStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request) {
+	var ogrno, toplamgun int
+	var kurum, okul string
+	var err error
+
+	var dat StajEkleVars = data.Vars.(StajEkleVars)
+	dat.DenkStaj = true
+	data.Vars = dat
+
+	ogrno, err = formSayi(r.PostFormValue("no"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
+		return
+	}
+
+	kurum, err = formStr(r.PostFormValue("kurum"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Kurum eksik veya yanlış!")))
+		return
+	}
+
+	okul, err = formStr(r.PostFormValue("okul"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Önceki okul eksik!")))
+		return
+	}
+
+	toplamgun, err = formSayi(r.PostFormValue("toplamgun"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Toplam gün eksik veya yanlış!")))
+		return
+	}
+
+	ogr := database.DenkStaj{ogrno, kurum, okul, toplamgun, toplamgun/2}
+	if err := ogr.Insert(sh.Conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("DenkStaj eklenirken veritabanında bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Info("DGS/Yatay Geçiş Staj bilgisi veritabanına başarıyla eklendi!")))
+
+	// TODO Eski değerleri inputlara ata
+}
