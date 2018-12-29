@@ -28,14 +28,21 @@ func (ogr *Ogrenci) Insert(conn *Connection) error {
 }
 
 func StajiTamamOgrenciler(conn *Connection) ([]Ogrenci, error) {
-	const sql string = `SELECT o.No, o.Ad, o.Soyad, o.Ogretim
-FROM ogrenci AS o, staj AS s LEFT JOIN denkstaj AS d ON s.OgrenciNo = d.OgrenciNo
+	const sql string = `SELECT No, Ad, Soyad, Ogretim FROM
+(SELECT o.No, o.Ad, o.Soyad, o.Ogretim, SUM(s.Kabulgun) as KabulGun, SUM(s.ToplamGun) as ToplamGun
+FROM ogrenci AS o, staj AS s
 WHERE o.No = s.OgrenciNo
-GROUP BY o.No, o.Ad, o.Soyad, o.Ogretim
-HAVING (SUM(s.Kabulgun) >= ? OR SUM(s.Kabulgun) + SUM(d.KabulGun) >= ? OR SUM(d.KabulGun) >= ?)
-AND (SUM(s.ToplamGun) >= 60 OR SUM(d.ToplamGun) >= 60 OR SUM(s.ToplamGun) + SUM(d.ToplamGun) >= 60)`
+GROUP BY No, Ad, Soyad, Ogretim
+UNION
+SELECT o.No, o.Ad, o.Soyad, o.Ogretim, SUM(d.Kabulgun) as KabulGun, SUM(d.ToplamGun) as ToplamGun
+FROM ogrenci AS o, denkstaj AS d
+WHERE o.No = d.OgrenciNo
+GROUP BY No, Ad, Soyad, Ogretim) AS GenelStaj
+GROUP BY No, Ad, Soyad, Ogretim
+HAVING SUM(Kabulgun) >= ?
+AND SUM(ToplamGun) >= 60`
 
-	q, err := conn.db.Query(sql, cfg.GerekenStajGunu(), cfg.GerekenStajGunu(), cfg.GerekenStajGunu())
+	q, err := conn.db.Query(sql, cfg.GerekenStajGunu())
 	if err != nil {
 		return nil, err
 	}
