@@ -16,8 +16,6 @@ const zamanFormati = "2006-01-02"
 
 type StajEkleVars struct {
 	Konular []database.Konu
-	Kurumlar []string
-	DenkStaj bool
 }
 
 type StajEkle struct {
