@@ -29,12 +29,13 @@ func (ogr *Ogrenci) Insert(conn *Connection) error {
 
 func StajiTamamOgrenciler(conn *Connection) ([]Ogrenci, error) {
 	const sql string = `SELECT o.No, o.Ad, o.Soyad, o.Ogretim
-FROM ogrenci AS o, staj AS s WHERE o.No = s.OgrenciNo
+FROM ogrenci AS o, staj AS s LEFT JOIN denkstaj AS d ON s.OgrenciNo = d.OgrenciNo
+WHERE o.No = s.OgrenciNo
 GROUP BY o.No, o.Ad, o.Soyad, o.Ogretim
-HAVING SUM(s.KabulGun) >= ? AND SUM(s.ToplamGun) >= 60`
-	// TODO DenkStaj öğrencilerini de say?
+HAVING (SUM(s.Kabulgun) >= ? OR SUM(s.Kabulgun) + SUM(d.KabulGun) >= ? OR SUM(d.KabulGun) >= ?)
+AND (SUM(s.ToplamGun) >= 60 OR SUM(d.ToplamGun) >= 60 OR SUM(s.ToplamGun) + SUM(d.ToplamGun) >= 60)`
 
-	q, err := conn.db.Query(sql, cfg.GerekenStajGunu())
+	q, err := conn.db.Query(sql, cfg.GerekenStajGunu(), cfg.GerekenStajGunu(), cfg.GerekenStajGunu())
 	if err != nil {
 		return nil, err
 	}
