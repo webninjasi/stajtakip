@@ -44,6 +44,12 @@ CREATE TABLE IF NOT EXISTS `konu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.
+-- Dumping structure for view stajtest.kurum
+-- Creating temporary table to overcome VIEW dependency errors
+CREATE TABLE `kurum` (
+	`kurumadi` VARCHAR(50) NOT NULL COLLATE 'latin5_turkish_ci'
+) ENGINE=MyISAM;
+
 -- Dumping structure for table stajtest.mulakat
 CREATE TABLE IF NOT EXISTS `mulakat` (
   `OgrenciNo` int(11) NOT NULL,
@@ -108,6 +114,11 @@ CREATE TABLE IF NOT EXISTS `staj` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;
 
 -- Data exporting was unselected.
+-- Dumping structure for view stajtest.kurum
+-- Removing temporary table and create final VIEW structure
+DROP TABLE IF EXISTS `kurum`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` VIEW `kurum` AS SELECT DISTINCT kurumadi FROM staj UNION SELECT DISTINCT kurumadi FROM denkstaj ;
+
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

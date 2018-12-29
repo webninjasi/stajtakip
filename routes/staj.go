@@ -16,6 +16,7 @@ const zamanFormati = "2006-01-02"
 
 type StajEkleVars struct {
 	Konular []string
+	Kurumlar []string
 	DenkStaj bool
 }
 
@@ -28,7 +29,16 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	data := templates.NewMain("StajTakip - Öğrenci Ekle")
 
 	if konular, err := database.KonuListesi(sh.Conn); err == nil {
-		data.Vars = StajEkleVars{konular, false}
+		if kurumlar, err := database.KurumListesi(sh.Conn); err == nil {
+			data.Vars = StajEkleVars{konular, kurumlar, false}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("Kurum listesi yüklenemedi!")
+			w.WriteHeader(http.StatusInternalServerError)
+			sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Kurum listesi yüklenemedi!")))
+			return
+		}
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,

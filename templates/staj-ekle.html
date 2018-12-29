@@ -37,9 +37,14 @@
             <label for="kurum">Kurum</label>
           </div>
           <div class="col-10">
-            <input class="form-control" name="kurum" type="text">
+            <input class="form-control" name="kurum" type="text" list="kurumlist">
           </div>
         </div>
+        <datalist id="kurumlist">
+          {{range .Vars.Kurumlar}}
+          <option value="{{.}}">
+          {{end}}
+        </datalist>
 
         <div class="form-group row">
           <div class="col-2 form-label">
@@ -120,7 +125,7 @@
             <label for="kurum">Kurum</label>
           </div>
           <div class="col-10">
-            <input class="form-control" name="kurum" type="text">
+            <input class="form-control" name="kurum" type="text" list="kurumlist">
           </div>
         </div>
 
