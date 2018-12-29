@@ -27,7 +27,7 @@ type KomisyonGuncelle struct {
 }
 
 type KomisyonVars struct {
-	Uyeler []string
+	Uyeler []database.Komisyon
 }
 
 func (sh KomisyonListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -92,4 +92,62 @@ func (sh KomisyonEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanına başarıyla eklendi!")))
+}
+
+
+
+func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
+		return
+	}
+
+	data := templates.NewMain("StajTakip - Komisyon Sil")
+
+	if err := r.ParseForm(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Komisyon silme formu okunamadı!")
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon silme formu okunamadı!")))
+		return
+	}
+
+	var adSoyad string
+	var dahilMi string
+	var err error
+
+	adSoyad, err = formStr(r.PostFormValue("adSoyad"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Warning("AdSoyad eksik!")))
+		return
+	}
+	dahilMi = r.PostFormValue("dahil")
+	
+
+	if dahilMi != ""{
+		kom := database.Komisyon{adSoyad, true}
+		if err := kom.Update(sh.Conn); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
+			w.WriteHeader(http.StatusInternalServerError)
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
+			return
+		} 
+	}else{
+		kom := database.Komisyon{adSoyad, false}
+		if err := kom.Update(sh.Conn); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
+			w.WriteHeader(http.StatusInternalServerError)
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
+			return
+		}
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanından başarıyla değiştirildi.")))
 }

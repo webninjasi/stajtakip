@@ -32,8 +32,8 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	// Staj
 	s.mux.Handle("/staj-ekle", routes.StajEkle{conn})
 	s.mux.Handle("/konular", routes.KonuListesi{conn})   // Konu listesi
-	s.mux.Handle("/konu-ekle", routes.TODO{conn})
-	s.mux.Handle("/konu-sil", routes.TODO{conn})
+	s.mux.Handle("/konu-ekle", routes.KonuEkle{conn})
+	s.mux.Handle("/konu-sil", routes.KonuSil{conn})
 	s.mux.Handle("/konu-guncelle", routes.TODO{conn})
 
 	// Mülakat
@@ -44,7 +44,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/staj-degerlendir", routes.TODO{conn})    // Mülakat sonucu ekle
 	s.mux.Handle("/komisyon", routes.KomisyonListesi{conn}) // Komisyon Listesi
 	s.mux.Handle("/komisyon-ekle", routes.KomisyonEkle{conn})
-	s.mux.Handle("/komisyon-cikar", routes.TODO{conn})
+	s.mux.Handle("/komisyon-cikart", routes.KomisyonSil{conn})
 	s.mux.Handle("/komisyon-ata", routes.TODO{conn})
 
 	// Rapor
