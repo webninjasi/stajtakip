@@ -28,29 +28,4 @@ func (stj *Staj) Insert(conn *Connection) error {
 
 	return nil
 }
-
-func KonuListesi(conn *Connection) ([]string, error) {
-	const sql string = `SELECT Baslik FROM Konu WHERE Aktif=1`
-
-	q, err := conn.db.Query(sql)
-	if err != nil {
-		return nil, err
-	}
-	defer q.Close()
-
-	liste := []string{}
-	for q.Next() {
-		var baslik string
-
-		err = q.Scan(&baslik)
-		if err != nil {
-			return nil, err
-		}
-
-		liste = append(liste, baslik)
-	}
-
-	return liste, nil
-}
-
 // TODO update, delete fonksiyonları

@@ -4,17 +4,37 @@
 </div>
 
 <div class="container">
+    <form method="POST" action="/konu-ekle">
+      <div class="form-group row">
+        <div class="col-2 form-label">
+          <label for="baslik">Baslık</label>
+        </div>
+        <div class="col-10">
+          <input class="form-control" name="Baslik" type="text">
+        </div>
+      </div>
+
+      <input class="btn btn-primary" type="submit" value="Ekle">
+
+    </form>
     <table class="table">
       <thead>
         <tr>
           <th scope="col">Konular</th>
+          <th scope="col">Aktif</th>
         </tr>
       </thead>
       <tbody>
         {{range .Vars.Konular}}
         <tr>
-          <td scope="row">{{.}}</td>
-        </tr>
+            <td scope="row">{{.Baslik}}</td>
+            <td scope="row">
+            <form method="POST" action="/konu-sil">
+              <input type="hidden" name="baslik" value="{{.Baslik}}" >
+              <input type="checkbox" name="aktif" onchange="this.form.submit()" {{if .Aktif}} checked{{end}} >
+            </form>
+            </td>
+          </tr>
         {{end}}
       </tbody>
     </table>

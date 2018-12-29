@@ -21,8 +21,19 @@ func (kom *Komisyon) Insert(conn *Connection) error {
 	return nil
 }
 
-func KomisyonListesi(conn *Connection) ([]string, error) {
-	const sql string = `SELECT AdSoyad FROM komisyon WHERE Dahil=1`
+func(kom *Komisyon) Update(conn *Connection) error {
+	const sql string = "UPDATE komisyon SET Dahil = (?) WHERE AdSoyad = (?);"
+
+	_, err := conn.db.Exec(sql, kom.Dahil, kom.AdSoyad)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func KomisyonListesi(conn *Connection) ([]Komisyon, error) {
+	const sql string = `SELECT AdSoyad,Dahil FROM komisyon`
 
 	q, err := conn.db.Query(sql)
 	if err != nil {
@@ -30,16 +41,16 @@ func KomisyonListesi(conn *Connection) ([]string, error) {
 	}
 	defer q.Close()
 
-	liste := []string{}
+	liste := []Komisyon{}
 	for q.Next() {
 		var AdSoyad string
-
-		err = q.Scan(&AdSoyad)
+		var Dahil bool
+		err = q.Scan(&AdSoyad,&Dahil)
 		if err != nil {
 			return nil, err
 		}
 
-		liste = append(liste, AdSoyad)
+		liste = append(liste, Komisyon{AdSoyad,Dahil})
 	}
 
 	return liste, nil

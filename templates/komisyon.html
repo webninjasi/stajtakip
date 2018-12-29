@@ -17,19 +17,27 @@
         <input class="btn btn-primary" type="submit" value="Ekle">
     </form>
 
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Ad Soyad</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range .Vars.Uyeler}}
-        <tr>
-          <td scope="row">{{.}}</td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
+   
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Ad Soyad</th>
+            <th scope="col">Dahil</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Vars.Uyeler}}
+          <tr>
+            <td scope="row">{{.AdSoyad}}</td>
+            <td scope="row">
+            <form method="POST" action="/komisyon-cikart">
+              <input type="hidden" name="adSoyad" value="{{.AdSoyad}}" >
+              <input type="checkbox" name="dahil" onchange="this.form.submit()" {{if .Dahil}} checked{{end}} >
+            </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>    
 </div>
 {{end}}
