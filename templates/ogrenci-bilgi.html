@@ -43,6 +43,7 @@
     </div>
   </form>
 
+  {{if ne (len .Vars.Stajlar) 0}}
   <table class="table">
     <thead>
       <tr>
@@ -73,6 +74,31 @@
       {{end}}
     </tbody>
   </table>
+  {{end}}
+
+  {{if ne (len .Vars.DenkStajlar) 0}}
+  <h2>DGS/Yatay Geçiş Stajları</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Kurum Adı</th>
+        <th scope="col">Önceki Okul</th>
+        <th scope="col">Kabul Gün</th>
+        <th scope="col">Toplam Gün</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Vars.DenkStajlar}}
+      <tr>
+        <td>{{.KurumAdi}}</td>
+        <td>{{.OncekiOkul}}</td>
+        <td>{{.KabulGun}}</td>
+        <td>{{.ToplamGun}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
   {{end}}
 </div>
 {{end}}

@@ -2,7 +2,7 @@ package routes
 
 import (
 	"net/http"
-	
+
 	"stajtakip/database"
 	"stajtakip/templates"
 	"stajtakip/cfg"
@@ -15,6 +15,7 @@ var tpl_ogrenci_bilgi = templates.Load("templates/ogrenci-bilgi.html")
 type OgrenciBilgiVars struct {
 	Ogr *database.Ogrenci
   Stajlar []database.Staj
+  DenkStajlar []database.DenkStaj
 	Basari bool
 }
 
@@ -46,6 +47,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var err error
   var ogr *database.Ogrenci
   var stjlar []database.Staj
+  var dstjlar []database.DenkStaj
 
 	no, err = formSayi(r.FormValue("no"))
 	if err != nil || (no < 0) {
@@ -78,10 +80,25 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  dstjlar, err = database.OgrenciDenkStajListesi(sh.Conn, no)
+  if err != nil {
+    logrus.WithFields(logrus.Fields{
+      "err": err,
+    }).Error("Öğrenci denkstaj bilgileri aranırken veritabanında bir hata oluştu!")
+    w.WriteHeader(http.StatusInternalServerError)
+    sablonHatasi(w, tpl_ogrenci_bilgi.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+    return
+  }
+
 	var kabulGun, toplamGun int = 0, 0
 	var basari bool = false
 
 	for _, stj := range stjlar {
+		kabulGun += stj.KabulGun
+		toplamGun += stj.ToplamGun
+	}
+
+	for _, stj := range dstjlar {
 		kabulGun += stj.KabulGun
 		toplamGun += stj.ToplamGun
 	}
@@ -93,6 +110,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   data.Vars = OgrenciBilgiVars{
     Ogr: ogr,
     Stajlar: stjlar,
+    DenkStajlar: dstjlar,
 		Basari: basari,
   }
 
