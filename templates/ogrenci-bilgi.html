@@ -1,0 +1,78 @@
+{{define "content"}}
+<div class="main-title">
+  <h1>Öğrenci Bilgileri</h1>
+</div>
+
+{{if ne .Alert ""}}
+  {{template "alert" .}}
+{{end}}
+
+<div class="container">
+  {{if .Vars.Ogr}}
+  {{if .Vars.Basari}}
+  <span class="badge badge-pill badge-success">Stajını Tamamlamış</span>
+  {{else}}
+  <span class="badge badge-pill badge-danger">Stajını Tamamlamamış</span>
+  {{end}}
+  <form method="POST" action="/ogrenci-bilgi">
+    <div class="form-group row">
+      <div class="col-2 form-label">
+        <label for="no">Öğrenci No</label>
+      </div>
+      <div class="col-10">
+        <input class="form-control" name="no" type="number" value="{{.Vars.Ogr.No}}" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <div class="col-2 form-label">
+        <label for="ad">Ad</label>
+      </div>
+      <div class="col-10">
+        <input class="form-control" name="ad" type="text" value="{{.Vars.Ogr.Ad}}" disabled>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <div class="col-2 form-label">
+        <label for="soyad">Soyad</label>
+      </div>
+      <div class="col-10">
+        <input class="form-control" name="soyad" type="text" value="{{.Vars.Ogr.Soyad}}" disabled>
+      </div>
+    </div>
+  </form>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Kurum Adı</th>
+        <th scope="col">Şehir</th>
+        <th scope="col">Konu Başlık</th>
+        <th scope="col">Başlangıç</th>
+        <th scope="col">Bitiş</th>
+        <th scope="col">Sınıf</th>
+        <th scope="col">Kabul Gün</th>
+        <th scope="col">Toplam Gün</th>
+        <th scope="col">Durum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Vars.Stajlar}}
+      <tr>
+        <td>{{.KurumAdi}}</td>
+        <td>{{.Sehir}}</td>
+        <td>{{.KonuBaslik}}</td>
+        <td>{{.Baslangic}}</td>
+        <td>{{.Bitis}}</td>
+        <td>{{.Sinif}}</td>
+        <td>{{.KabulGun}}</td>
+        <td>{{.ToplamGun}}</td>
+        <td>{{if .Degerlendirildi}}Değerlendirildi{{else}}Değerlendirilmedi{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+</div>
+{{end}}

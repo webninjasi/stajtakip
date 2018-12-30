@@ -2,6 +2,7 @@ package database
 
 import (
 	"stajtakip/cfg"
+	"errors"
 )
 
 type Ogrenci struct {
@@ -10,6 +11,8 @@ type Ogrenci struct {
 	Soyad   string
 	Ogretim int
 }
+
+var Err_ogrenci_yok error = errors.New("Öğrenci bulunamadı!")
 
 func (ogr *Ogrenci) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO ogrenci (No, Ad, Soyad, Ogretim) VALUES (?, ?, ?, ?);"
@@ -25,6 +28,27 @@ func (ogr *Ogrenci) Insert(conn *Connection) error {
 	}
 
 	return nil
+}
+
+func OgrenciBul(conn *Connection, no int) (*Ogrenci, error) {
+	const sql string = `SELECT No, Ad, Soyad, Ogretim FROM ogrenci WHERE No=?`
+
+	q, err := conn.db.Query(sql, no)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	if !q.Next() {
+		return nil, Err_ogrenci_yok
+	}
+
+	var ogr Ogrenci
+	if err = q.Scan(&ogr.No, &ogr.Ad, &ogr.Soyad, &ogr.Ogretim); err != nil {
+		return nil, err
+	}
+
+	return &ogr, nil
 }
 
 func StajiTamamOgrenciler(conn *Connection) ([]Ogrenci, error) {

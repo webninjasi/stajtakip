@@ -1,5 +1,9 @@
 package database
 
+import (
+	dsql "database/sql"
+)
+
 type Staj struct {
 	OgrenciNo       int
 	KurumAdi        string
@@ -28,4 +32,33 @@ func (stj *Staj) Insert(conn *Connection) error {
 
 	return nil
 }
-// TODO update, delete fonksiyonları
+
+func OgrenciStajListesi(conn *Connection, no int) ([]Staj, error) {
+	const sql string = `SELECT KurumAdi, Sehir, KonuBaslik, Baslangic, Bitis, Sinif, ToplamGun, KabulGun, Degerlendirildi
+FROM Staj WHERE OgrenciNo=?`
+
+	q, err := conn.db.Query(sql, no)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	liste := []Staj{}
+	for q.Next() {
+		var stj Staj
+		var kabul dsql.NullInt64
+
+		err = q.Scan(&stj.KurumAdi, &stj.Sehir, &stj.KonuBaslik, &stj.Baslangic,
+			&stj.Bitis, &stj.Sinif, &stj.ToplamGun, &kabul, &stj.Degerlendirildi)
+		if err != nil {
+			return nil, err
+		}
+		if kabul.Valid {
+			stj.KabulGun = int(kabul.Int64)
+		}
+
+		liste = append(liste, stj)
+	}
+
+	return liste, nil
+}
