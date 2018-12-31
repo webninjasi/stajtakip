@@ -57,36 +57,40 @@ func (sh MulakatListesiPDF) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     Border: 1,
   }
   rect := []*gopdf.Rect{
-    &gopdf.Rect{
+    &gopdf.Rect{ // No
       W: 50,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Ad
       W: OgrenciAdiUzunlugu,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Soyad
       W: OgrenciAdiUzunlugu,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Öğretim
       W: 25,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Tarih
       W: 60,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Saat
       W: 35,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Komisyon
       W: KomisyonAdiUzunlugu,
       H: 16,
     },
-    &gopdf.Rect{
+    &gopdf.Rect{ // Komisyon
       W: KomisyonAdiUzunlugu,
+      H: 16,
+    },
+    &gopdf.Rect{ // Boşluk
+      W: 30,
       H: 16,
     },
   }
@@ -150,6 +154,7 @@ func (sh MulakatListesiPDF) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
     pdf.SetX(10)
     for i, val := range vals {
+      // Değeri yazar
       if pdf.CellWithOption(rect[i], val, header_opt) != nil {
         logrus.WithFields(logrus.Fields{
           "err": err,
@@ -157,6 +162,11 @@ func (sh MulakatListesiPDF) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "PDF oluşturulamadı!", http.StatusInternalServerError)
         return
       }
+
+      // Taşan kısımların üstünü örter
+      pdf.SetFillColor(255, 255, 255)
+      pdf.RectFromUpperLeftWithStyle(pdf.GetX(), pdf.GetY(), rect[i+1].W, rect[i+1].H, "F")
+      pdf.SetFillColor(0, 0, 0)
     }
     pdf.Br(20)
   }
