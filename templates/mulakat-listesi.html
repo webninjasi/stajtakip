@@ -11,8 +11,8 @@
   <form class="form" method="POST" action="/mulakat">
     <input type="hidden" name="gorev" value="yenile">
 
-    <a href="/mulakat-pdf" class="btn btn-primary"><span class="oi oi-file"></span> PDF</a>
-    <a href="/mulakat-xlsx" class="btn btn-primary"><span class="oi oi-document"></span> XLSX</a>
+    <a href="/mulakat-pdf" class="btn btn-info"><span class="oi oi-file"></span> PDF</a>
+    <a href="/mulakat-xlsx" class="btn btn-info"><span class="oi oi-document"></span> XLSX</a>
 
     <input class="btn btn-primary" type="submit" value="Listeyi Yenile">
   </form>
@@ -26,9 +26,9 @@
         <th scope="col">No</th>
         <th scope="col">Ad</th>
         <th scope="col">Soyad</th>
-        <th scope="col">Öğretim</th>
-        <th scope="col">Mülakat Tarihi</th>
-        <th scope="col">Mülakat Saati</th>
+        <th scope="col">I/II</th>
+        <th scope="col">Tarih</th>
+        <th scope="col">Saat</th>
         <th scope="col">Komisyon Üyesi</th>
         <th scope="col">Komisyon Üyesi</th>
         <th scope="col"></th>
@@ -67,6 +67,11 @@
             </select>
           </td>
           <td><input class="btn btn-success" type="submit" value="Güncelle"></td>
+          <td>
+            <a href="/staj-degerlendir?no={{.OgrenciNo}}&baslangic={{.StajBaslangic}}" class="btn btn-primary">
+              <span class="oi oi-check"></span> Değerlendir
+            </a>
+          </td>
         </form>
       </tr>
       {{end}}
