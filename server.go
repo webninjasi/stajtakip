@@ -38,6 +38,8 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 
 	// Mülakat
 	s.mux.Handle("/mulakat", routes.MulakatListesi{conn}) // Tarih/saat, komisyon -> öğrenci, ...
+	s.mux.Handle("/mulakat-pdf", routes.MulakatListesiPDF{conn})
+	s.mux.Handle("/mulakat-xlsx", routes.MulakatListesiXLSX{conn})
 	s.mux.Handle("/sonuc-listele", routes.TODO{conn})   // Mülakat sonuçları
 	s.mux.Handle("/sonuc-listele-pdf", routes.TODO{conn})
 	s.mux.Handle("/sonuc-listele-xls", routes.TODO{conn})
