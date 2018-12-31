@@ -32,6 +32,17 @@ func(konu *Konu) Update(conn *Connection) error {
 	return nil
 }
 
+func(konu *Konu) Delete(conn *Connection) error {
+	const sql string = "DELETE FROM konu WHERE Baslik = (?);"
+
+	_, err := conn.db.Exec(sql, konu.Baslik)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func KonuListesi(conn *Connection) ([]Konu, error) {
 	const sql string = `SELECT Baslik, Aktif FROM konu`
 

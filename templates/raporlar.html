@@ -2,6 +2,45 @@
 <div class="main-title">
   <h1>Raporlar</h1>
 </div>
+{{if ne .Alert ""}}
+{{template "alert" .}}
+{{end}}
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Sehir</th>
+        <th scope="col">Basari Orani</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Vars.SehirRapor}}
+      <tr>
+        <th scope="row">{{.Sehir}}</th>
+        <td>{{.BasariOrani}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
 
-...
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Konu</th>
+        <th scope="col">Basari Orani</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Vars.KonuRapor}}
+      <tr>
+        <th scope="row">{{.Konu}}</th>
+        <td>{{.BasariOrani}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+
 {{end}}

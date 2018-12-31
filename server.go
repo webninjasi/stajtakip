@@ -27,14 +27,14 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/ogrenci-listele-pdf", routes.OgrenciListesiPDF{conn})
 	s.mux.Handle("/ogrenci-listele-xls", routes.OgrenciListesiXLS{conn})
 	s.mux.Handle("/ogrenci-belge-ekle", routes.OgrenciBelge{conn}) // DGS için pdf
-	s.mux.Handle("/ogrenci-ara", routes.TODO{conn})        // OgrNo -> Bilgiler, stajlar, staj bitim durumu
+	s.mux.Handle("/ogrenci-ara", routes.TODO{conn})                // OgrNo -> Bilgiler, stajlar, staj bitim durumu
 
 	// Staj
 	s.mux.Handle("/staj-ekle", routes.StajEkle{conn})
-	s.mux.Handle("/konular", routes.KonuListesi{conn})   // Konu listesi
+	s.mux.Handle("/konular", routes.KonuListesi{conn}) // Konu listesi
 	s.mux.Handle("/konu-ekle", routes.KonuEkle{conn})
 	s.mux.Handle("/konu-sil", routes.KonuSil{conn})
-	s.mux.Handle("/konu-guncelle", routes.TODO{conn})
+	s.mux.Handle("/konu-guncelle", routes.KonuGuncelle{conn})
 
 	// Mülakat
 	s.mux.Handle("/mulakat-listele", routes.TODO{conn}) // Tarih/saat, komisyon -> öğrenci, ...
@@ -45,7 +45,7 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/komisyon", routes.KomisyonListesi{conn}) // Komisyon Listesi
 	s.mux.Handle("/komisyon-ekle", routes.KomisyonEkle{conn})
 	s.mux.Handle("/komisyon-cikart", routes.KomisyonSil{conn})
-	s.mux.Handle("/komisyon-ata", routes.TODO{conn})
+	s.mux.Handle("/komisyon-guncelle", routes.KomisyonGuncelle{conn})
 
 	// Rapor
 	s.mux.Handle("/rapor-il", routes.TODO{conn})   // İl bazında başarı
