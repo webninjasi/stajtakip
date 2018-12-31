@@ -65,23 +65,63 @@ type MulakatSonuc struct {
 func (mul *MulakatSonuc) Update(conn *Connection) error {
 	const sql string = `UPDATE mulakat
 SET PuanDevam=?, PuanCaba=?, PuanVakit=?, PuanAmireDavranis=?,
-PuanIsArkadasaDavranis=?, PuanProje=?, PuanDuzen=?, PuanSunum=?, PuanIcerik=?, PuanMulakat=?)
+PuanIsArkadasaDavranis=?, PuanProje=?, PuanDuzen=?, PuanSunum=?, PuanIcerik=?, PuanMulakat=?
 WHERE OgrenciNo=? AND StajBaslangic=?`
+	const sql2 string = `UPDATE staj
+SET Degerlendirildi=true
+WHERE OgrenciNo=? AND Baslangic=?`
 
-	result, err := conn.db.Exec(
-    sql, mul.PuanDevam, mul.PuanCaba, mul.PuanVakit, mul.PuanAmireDavranis,
-		mul.PuanIsArkadasaDavranis, mul.PuanProje, mul.PuanDuzen, mul.PuanSunum,
-		mul.PuanIcerik, mul.PuanMulakat, mul.OgrenciNo, mul.StajBaslangic)
+	tx, err := conn.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	_, err = result.LastInsertId()
+	_, err = tx.Exec(
+    sql, mul.PuanDevam, mul.PuanCaba, mul.PuanVakit, mul.PuanAmireDavranis,
+		mul.PuanIsArkadasaDavranis, mul.PuanProje, mul.PuanDuzen, mul.PuanSunum,
+		mul.PuanIcerik, mul.PuanMulakat,mul.OgrenciNo, mul.StajBaslangic)
 	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
+	}
+
+	_, err = tx.Exec(sql2, mul.OgrenciNo, mul.StajBaslangic)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return err
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func MulakatOgrenciBul(conn *Connection, no int, baslangic string) (*MulakatOgrenci, error) {
+	const sql string = `SELECT m.OgrenciNo, o.Ad, o.Soyad, o.Ogretim,
+m.StajBaslangic, m.TarihSaat, m.KomisyonUye1, m.KomisyonUye2
+FROM mulakat AS m, ogrenci AS o WHERE m.OgrenciNo=o.No AND o.No=? AND m.StajBaslangic=?`
+
+	q, err := conn.db.Query(sql, no, baslangic)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	if !q.Next() {
+		return nil, ErrVeriBulunamadi
+	}
+
+	if mul, err := MulakatOgrenciScan(q); err != nil {
+		return nil, err
+	} else {
+		return &mul, nil
+	}
 }
 
 func MulakatListesi(conn *Connection) ([]MulakatOgrenci, error) {
@@ -97,40 +137,48 @@ FROM mulakat AS m, ogrenci AS o WHERE m.OgrenciNo=o.No AND m.PuanMulakat IS NULL
 
 	liste := []MulakatOgrenci{}
 	for q.Next() {
-		var mul MulakatOgrenci
-		var tarihSaat mysql.NullTime
-		var kom1, kom2 dsql.NullString
-
-		err = q.Scan(&mul.OgrenciNo, &mul.Ad, &mul.Soyad, &mul.Ogretim, &mul.StajBaslangic,
-								 &tarihSaat, &kom1, &kom2)
-		if err != nil {
+		if mul, err := MulakatOgrenciScan(q); err != nil {
 			return nil, err
-		}
-
-		if tarihSaat.Valid {
-			mul.Tarih = tarihSaat.Time.Format(TarihFormati)
-			mul.Saat = tarihSaat.Time.Format(SaatFormati)
 		} else {
-			mul.Tarih = ""
-			mul.Saat = ""
+			liste = append(liste, mul)
 		}
-
-		if kom1.Valid {
-			mul.KomisyonUye1 = kom1.String
-		} else {
-			mul.KomisyonUye1 = "-"
-		}
-
-		if kom2.Valid {
-			mul.KomisyonUye2 = kom2.String
-		} else {
-			mul.KomisyonUye2 = "-"
-		}
-
-		liste = append(liste, mul)
 	}
 
 	return liste, nil
+}
+
+func MulakatOgrenciScan(q *dsql.Rows) (MulakatOgrenci, error) {
+	var mul MulakatOgrenci
+	var tarihSaat mysql.NullTime
+	var kom1, kom2 dsql.NullString
+
+	err := q.Scan(&mul.OgrenciNo, &mul.Ad, &mul.Soyad, &mul.Ogretim, &mul.StajBaslangic,
+							 &tarihSaat, &kom1, &kom2)
+	if err != nil {
+		return MulakatOgrenci{}, err
+	}
+
+	if tarihSaat.Valid {
+		mul.Tarih = tarihSaat.Time.Format(TarihFormati)
+		mul.Saat = tarihSaat.Time.Format(SaatFormati)
+	} else {
+		mul.Tarih = ""
+		mul.Saat = ""
+	}
+
+	if kom1.Valid {
+		mul.KomisyonUye1 = kom1.String
+	} else {
+		mul.KomisyonUye1 = "-"
+	}
+
+	if kom2.Valid {
+		mul.KomisyonUye2 = kom2.String
+	} else {
+		mul.KomisyonUye2 = "-"
+	}
+
+	return mul, nil
 }
 
 func MulakatListesiOlustur(conn *Connection) error {

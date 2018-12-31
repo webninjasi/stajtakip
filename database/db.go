@@ -14,6 +14,7 @@ const DB_PING_TIMEOUT = 10 * time.Second
 const DB_PING_TIMER = 1 * time.Minute
 
 var ErrAlreadyConnected error = errors.New("Zaten veritabanı sunucusuna bağlı!")
+var ErrVeriBulunamadi error = errors.New("Aranan veri bulunamadı!")
 
 type Connection struct {
 	db      *sql.DB
