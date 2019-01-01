@@ -27,114 +27,33 @@ func (sh MulakatListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	durum := http.StatusOK
+	code := http.StatusOK
 	data := templates.NewMain("StajTakip - Mülakat Listesi")
 
 	if r.Method == http.MethodPost {
-		// Döngü amacında kullanılmayan for döngüsü
-		// Tüm çıkışları break veya return ile kapalı
-		for {
-			if err := r.ParseForm(); err != nil {
-				logrus.WithFields(logrus.Fields{
-					"err": err,
-				}).Warn("Mülakat formu okunamadı!")
-				durum = http.StatusBadRequest
-				data = data.Error("Hatalı istek!")
-				break
-			}
+		if err := r.ParseForm(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("Mülakat formu okunamadı!")
+			http.Error(w, "Hatalı istek!", http.StatusBadRequest)
+			return
+		}
 
-			var gorev string
-			var err error
+		gorev, err := formStr(r.PostFormValue("gorev"))
+		if err != nil {
+			http.Error(w, "Hatalı istek!", http.StatusBadRequest)
+			return
+		}
 
-			gorev, err = formStr(r.PostFormValue("gorev"))
-			if err != nil {
-				http.Error(w, "Hatalı istek!", http.StatusBadRequest)
-				return
-			}
-
-			if gorev == "yenile" {
-				if err := database.MulakatListesiOlustur(sh.Conn); err != nil {
-					logrus.WithFields(logrus.Fields{
-						"err": err,
-					}).Error("Mülakat listesi yenilenemedi!")
-					durum = http.StatusInternalServerError
-					data = data.Error("Mülakat listesi yenilenemedi!")
-					break
-				}
-
-				data = data.Info("Mülakat listesi yenilendi!")
-				break
-			} else if gorev == "guncelle" {
-				var no int
-				var baslangic, tarih, saat, komisyon1, komisyon2 string
-
-				no, err = formSayi(r.PostFormValue("no"))
-				if err != nil {
-					http.Error(w, "Hatalı istek!", http.StatusBadRequest)
-					return
-				}
-
-				baslangic, err = formStr(r.PostFormValue("baslangic"))
-				if err != nil {
-					http.Error(w, "Hatalı istek!", http.StatusBadRequest)
-					return
-				}
-
-				tarih, err = formStr(r.PostFormValue("tarih"))
-				if err != nil {
-					durum = http.StatusBadRequest
-					data = data.Warning("Tarih eksik veya yanlış!")
-					break
-				}
-
-				saat, err = formStr(r.PostFormValue("saat"))
-				if err != nil {
-					durum = http.StatusBadRequest
-					data = data.Warning("Saat eksik veya yanlış!")
-					break
-				}
-
-				komisyon1, err = formStr(r.PostFormValue("komisyon1"))
-				if err != nil {
-					durum = http.StatusBadRequest
-					data = data.Warning("Komisyon üyesi (1) eksik veya yanlış!")
-					break
-				}
-
-				komisyon2, err = formStr(r.PostFormValue("komisyon2"))
-				if err != nil {
-					durum = http.StatusBadRequest
-					data = data.Warning("Komisyon üyesi (2) eksik veya yanlış!")
-					break
-				}
-
-				var tarihSaat time.Time
-
-				tarihSaat, err = time.Parse(database.TarihSaatFormati, tarih + " " + saat)
-				if err != nil {
-					durum = http.StatusBadRequest
-					data = data.Warning("Tarih/saat formatı uygun değil!")
-					break
-				}
-
-				mul := database.Mulakat{no, baslangic, tarihSaat.Format(database.TarihSaatFormati), komisyon1, komisyon2}
-				if err := mul.Update(sh.Conn); err != nil {
-					logrus.WithFields(logrus.Fields{
-						"err": err,
-					}).Error("Mülakat güncellenemedi!")
-					durum = http.StatusInternalServerError
-					data = data.Error("Mülakat güncellenemedi!")
-					break
-				}
-
-				data = data.Info("Mülakat listesi güncellendi!")
-				break
-			}
-			break
+		if gorev == "yenile" {
+			code, data = sh.Yenile(w, r, data)
+		} else if gorev == "guncelle" {
+			code, data = sh.Guncelle(w, r, data)
 		}
 	}
 
 	vars := MulakatListesiVars{nil, nil}
+	data.Vars = vars
 
 	if mulakatlar, err := database.MulakatListesi(sh.Conn); err == nil {
 		vars.Mulakatlar = mulakatlar
@@ -160,6 +79,64 @@ func (sh MulakatListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	data.Vars = vars
 
-	w.WriteHeader(durum)
+	w.WriteHeader(code)
 	sablonHatasi(w, tpl_mulakat_listesi.ExecuteTemplate(w, "main", data))
+}
+
+func (sh MulakatListesi) Yenile(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	if err := database.MulakatListesiOlustur(sh.Conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Mülakat listesi yenilenemedi!")
+		return http.StatusInternalServerError, data.Error("Mülakat listesi yenilenemedi!")
+	}
+
+	return http.StatusOK, data.Info("Mülakat listesi yenilendi!")
+}
+
+func (sh MulakatListesi) Guncelle(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	no, err := formSayi(r.PostFormValue("no"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Hatalı istek!")
+	}
+
+	baslangic, err := formStr(r.PostFormValue("baslangic"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Hatalı istek!")
+	}
+
+	tarih, err := formStr(r.PostFormValue("tarih"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Tarih eksik veya yanlış!")
+	}
+
+	saat, err := formStr(r.PostFormValue("saat"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Saat eksik veya yanlış!")
+	}
+
+	komisyon1, err := formStr(r.PostFormValue("komisyon1"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Komisyon üyesi (1) eksik veya yanlış!")
+	}
+
+	komisyon2, err := formStr(r.PostFormValue("komisyon2"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Komisyon üyesi (2) eksik veya yanlış!")
+	}
+
+	tarihSaat, err := time.Parse(database.TarihSaatFormati, tarih + " " + saat)
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Tarih/saat formatı uygun değil!")
+	}
+
+	mul := database.Mulakat{no, baslangic, tarihSaat.Format(database.TarihSaatFormati), komisyon1, komisyon2}
+	if err := mul.Update(sh.Conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Mülakat güncellenemedi!")
+		return http.StatusInternalServerError, data.Error("Mülakat güncellenemedi!")
+	}
+
+	return http.StatusOK, data.Info("Mülakat listesi güncellendi!")
 }
