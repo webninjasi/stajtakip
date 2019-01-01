@@ -87,5 +87,4 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Info("Öğrenci veritabanına başarıyla eklendi!")))
-	// TODO eklenen öğrencinin detay bilgisine giden link ekle
 }

@@ -88,8 +88,11 @@ func (sh SonucListele) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  vars.Baslangic = bas.Format(database.TarihSaatFormati)
-  vars.Bitis = son.Add(time.Hour * 23 + time.Minute * 59).Format(database.TarihSaatFormati)
+  vars.Baslangic = bas.Format(database.TarihFormati)
+  vars.Bitis = son.Format(database.TarihFormati)
+  
+  baslangic = bas.Format(database.TarihSaatFormati)
+  bitis = son.Add(time.Hour * 23 + time.Minute * 59).Format(database.TarihSaatFormati)
   vars.Mul, err = database.MulakatSonucListesi(sh.Conn, baslangic, bitis)
   if err != nil {
     logrus.WithFields(logrus.Fields{

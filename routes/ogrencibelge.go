@@ -104,5 +104,4 @@ func (sh OgrenciBelge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Info("Öğrenci belgesi veritabanına başarıyla eklendi!")))
-	// TODO eklenen öğrencinin detay bilgisine giden link ekle
 }
