@@ -25,9 +25,6 @@ func (sh StajDegerlendir) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   }
 
   data := templates.NewMain("StajTakip - Staj Değerlendir")
-  vars := StajDegerlendirVars{
-    Mul: nil,
-  }
 
   if err := r.ParseForm(); err != nil {
     logrus.WithFields(logrus.Fields{
@@ -43,18 +40,32 @@ func (sh StajDegerlendir) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   var err error
   var code int = http.StatusOK
 
+  vars := StajDegerlendirVars{
+    Mul: nil,
+  }
+
   if r.Method == http.MethodPost {
     code, data = sh.Post(w, r, data)
   }
 
-	no, err = formSayi(r.FormValue("no"))
+  nostr := r.FormValue("no")
+  baslangicstr := r.FormValue("baslangic")
+
+  if nostr == "" || baslangicstr == "" {
+    data.Vars = vars
+  	w.WriteHeader(code)
+  	sablonHatasi(w, tpl_staj_degerlendir.ExecuteTemplate(w, "main", data))
+    return
+  }
+
+	no, err = formSayi(nostr)
 	if err != nil || (no < 0) {
 		w.WriteHeader(http.StatusBadRequest)
 		sablonHatasi(w, tpl_staj_degerlendir.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
 		return
 	}
 
-  baslangic, err = formStr(r.FormValue("baslangic"))
+  baslangic, err = formStr(baslangicstr)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		sablonHatasi(w, tpl_staj_degerlendir.ExecuteTemplate(w, "main", data.Warning("Başlangıç tarihi eksik veya yanlış!")))
