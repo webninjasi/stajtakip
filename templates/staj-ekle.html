@@ -27,39 +27,13 @@
           <div class="col-2 form-label">
             <label for="no">Öğrenci No</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <input class="form-control" name="no" type="number">
           </div>
-        </div>
-
-        <div class="form-group row">
-          <div class="col-2 form-label">
-            <label for="kurum">Kurum</label>
-          </div>
-          <div class="col-10">
-            <input class="form-control" name="kurum" type="text" list="kurumlist">
-          </div>
-        </div>
-        <datalist id="kurumlist">
-          {{range .Vars.Kurumlar}}
-          <option value="{{.}}">
-          {{end}}
-        </datalist>
-
-        <div class="form-group row">
-          <div class="col-2 form-label">
-            <label for="sehir">Şehir</label>
-          </div>
-          <div class="col-10">
-            <input class="form-control" name="sehir" type="text">
-          </div>
-        </div>
-
-        <div class="form-group row">
           <div class="col-2 form-label">
             <label for="konu">Konu</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <select class="custom-select" name="konu">
               {{range .Vars.Konular}}
               {{if .Aktif}}
@@ -70,20 +44,38 @@
           </div>
         </div>
 
+        <datalist id="kurumlist">
+          {{range .Vars.Kurumlar}}
+          <option value="{{.}}">
+          {{end}}
+        </datalist>
+
         <div class="form-group row">
           <div class="col-2 form-label">
-            <label for="baslangic">Başlangıç Günü</label>
+            <label for="kurum">Kurum</label>
           </div>
-          <div class="col-10">
-            <input class="form-control" name="baslangic" type="date">
+          <div class="col-4">
+            <input class="form-control" name="kurum" type="text" list="kurumlist">
+          </div>
+          <div class="col-2 form-label">
+            <label for="sehir">Şehir</label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" name="sehir" type="text">
           </div>
         </div>
 
         <div class="form-group row">
           <div class="col-2 form-label">
+            <label for="baslangic">Başlangıç Günü</label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" name="baslangic" type="date">
+          </div>
+          <div class="col-2 form-label">
             <label for="bitis">Bitiş Günü</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <input class="form-control" name="bitis" type="date">
           </div>
         </div>
@@ -92,16 +84,13 @@
           <div class="col-2 form-label">
             <label for="sinif">Sınıf</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <input class="form-control" name="sinif" type="number" min="1" max="8">
           </div>
-        </div>
-
-        <div class="form-group row">
           <div class="col-2 form-label">
             <label for="toplamgun">Toplam Gün</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <input class="form-control" name="toplamgun" type="number" min="1">
           </div>
         </div>
