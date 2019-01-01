@@ -26,7 +26,6 @@ type StajEkle struct {
 	Conn *database.Connection
 }
 
-// Verilen parametrelere göre veritabanına bir Staj eklemeye çalışır
 func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		http.Error(w, "Geçersiz metod!", http.StatusNotFound)

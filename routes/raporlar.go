@@ -40,7 +40,7 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method != http.MethodGet {
-		http.Error(w, "Get metodu kullanılmalı!", http.StatusNotFound)
+		http.Error(w, "Geçersiz metod!", http.StatusNotFound)
 		return
 	}
 

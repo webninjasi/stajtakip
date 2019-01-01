@@ -87,5 +87,4 @@ AND SUM(ToplamGun) >= 60`
 	return liste, nil
 }
 
-// TODO diğer fieldlar
 // TODO update, delete fonksiyonları

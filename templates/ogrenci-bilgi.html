@@ -14,6 +14,9 @@
   {{else}}
   <span class="badge badge-pill badge-danger">Stajını Tamamlamamış</span>
   {{end}}
+
+  <hr>
+
   <form method="POST" action="/ogrenci-bilgi">
     <div class="form-group row">
       <div class="col-2 form-label">
@@ -51,6 +54,12 @@
       </div>
     </div>
   </form>
+
+  <div class="d-flex justify-content-end">
+    <a href="/staj-ekle?no={{.Vars.Ogr.No}}" class="btn btn-success"><span class="oi oi-plus"></span> Staj Ekle</a>
+  </div>
+
+  <br>
 
   {{if ne (len .Vars.Stajlar) 0}}
   <table class="table">

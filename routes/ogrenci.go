@@ -10,21 +10,25 @@ import (
 
 var tpl_ogrenci_ekle = templates.Load("templates/ogrenci-ekle.html")
 
+type OgrenciEkleVars struct {
+	No int
+}
+
 type OgrenciEkle struct {
 	Conn *database.Connection
 }
 
-// Verilen parametrelere göre veritabanına bir öğrenci eklemeye çalışır
 func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	data := templates.NewMain("StajTakip - Öğrenci Ekle")
-
-	if r.Method == http.MethodGet {
-		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data))
+	if r.Method != http.MethodPost && r.Method != http.MethodGet {
+		http.Error(w, "Geçersiz metod!", http.StatusNotFound)
 		return
 	}
 
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
+	data := templates.NewMain("StajTakip - Öğrenci Ekle")
+	data.Vars = OgrenciEkleVars{}
+
+	if r.Method == http.MethodGet {
+		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data))
 		return
 	}
 
@@ -78,6 +82,8 @@ func (sh OgrenciEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
 		return
 	}
+
+	data.Vars = OgrenciEkleVars{no}
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_ogrenci_ekle.ExecuteTemplate(w, "main", data.Info("Öğrenci veritabanına başarıyla eklendi!")))

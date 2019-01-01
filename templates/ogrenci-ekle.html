@@ -7,6 +7,13 @@
   {{template "alert" .}}
 {{end}}
 
+{{if and .Vars .Vars.No}}
+<a href="/ogrenci-bilgi?no={{.Vars.No}}" class="btn btn-secondary">Öğrenci Bilgilerini Görüntüle</a>
+<br>
+<hr>
+<br>
+{{end}}
+
 <div class="container">
   <form method="POST" action="/ogrenci-ekle">
 

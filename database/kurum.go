@@ -23,5 +23,3 @@ func KurumListesi(conn *Connection) ([]string, error) {
 
 	return liste, nil
 }
-
-// TODO update, delete fonksiyonları
