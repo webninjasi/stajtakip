@@ -82,7 +82,9 @@
           {{if .Degerlendirildi}}
           Değerlendirildi
           {{else}}
-          Değerlendirilmedi
+          <a href="/staj-degerlendir?no={{$.Vars.Ogr.No}}&baslangic={{.Baslangic}}" class="btn btn-primary">
+            <span class="oi oi-check"></span> Değerlendir
+          </a>
           {{end}}
         </td>
       </tr>
