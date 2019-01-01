@@ -2,60 +2,64 @@
 <div class="main-title">
   <h1>Raporlar</h1>
 </div>
+
 {{if ne .Alert ""}}
 {{template "alert" .}}
 {{end}}
+
 <div class="container">
-  <form method="GET" action="/">
+  <form method="GET" action="/" class="form-inline">
     <div class="form-group row">
       <div class="col-2 form-label">
         <label for="year">Yıl</label>
       </div>
-      <div class="col-10">
+      <div class="col-8">
         <input class="form-control" name="year" type="number">
       </div>
+      <div class="col-2">
+        <input class="btn btn-primary" type="submit" value="Göster">
+      </div>
     </div>
-
-    <input class="btn btn-primary" type="submit" value="Listele">
-
   </form>
 
-<div class="container">
+  <br>
+
+  <h3>İl Bazında Staj Başarı Oranları</h3>
+
   <table class="table">
     <thead>
       <tr>
-        <th scope="col">Sehir</th>
-        <th scope="col">Basari Orani</th>
+        <th scope="col">Şehir</th>
+        <th scope="col">Başarı Oranı</th>
       </tr>
     </thead>
     <tbody>
       {{range .Vars.SehirRapor}}
       <tr>
         <th scope="row">{{.Sehir}}</th>
-        <td>{{.BasariOrani}}</td>
+        <td>%{{.BasariOrani}}</td>
       </tr>
       {{end}}
     </tbody>
   </table>
-</div>
 
-<div class="container">
+  <h3>Konu Başlıklarına Göre Staj Başarı Oranları</h3>
+
   <table class="table">
     <thead>
       <tr>
         <th scope="col">Konu</th>
-        <th scope="col">Basari Orani</th>
+        <th scope="col">Başarı Oranı</th>
       </tr>
     </thead>
     <tbody>
       {{range .Vars.KonuRapor}}
       <tr>
         <th scope="row">{{.Konu}}</th>
-        <td>{{.BasariOrani}}</td>
+        <td>%{{.BasariOrani}}</td>
       </tr>
       {{end}}
     </tbody>
   </table>
 </div>
-
 {{end}}

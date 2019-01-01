@@ -10,12 +10,12 @@ type RaporKonu struct {
 }
 
 func RaporSehirler(conn *Connection, year int) ([]RaporSehir, error) {
-	const sql string = `SELECT 
-Sehir, 
+	const sql string = `SELECT
+Sehir,
 ROUND((SUM(KabulGun)*1.0/SUM(ToplamGun))*100,2)
-as "%BasariOrani" 
-FROM staj 
-Where Year(Bitis) = (?) 
+as "%BasariOrani"
+FROM staj
+Where Degerlendirildi AND Year(Bitis) = ?
 Group BY Sehir;`
 
 	q, err := conn.db.Query(sql, year)
@@ -39,12 +39,12 @@ Group BY Sehir;`
 }
 
 func RaporKonular(conn *Connection, year int) ([]RaporKonu, error) {
-	const sql string = `SELECT 
-KonuBaslik, 
+	const sql string = `SELECT
+KonuBaslik,
 ROUND((SUM(KabulGun)*1.0/SUM(ToplamGun))*100,2)
-as "%BasariOrani" 
-FROM staj 
-Where Year(Bitis) = (?) 
+as "%BasariOrani"
+FROM staj
+Where Degerlendirildi AND Year(Bitis) = (?)
 Group BY KonuBaslik;`
 
 	q, err := conn.db.Query(sql, year)
