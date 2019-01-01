@@ -48,7 +48,7 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	yearstr := r.FormValue("year")
 	if yearstr == "" {
-		year = time.Now().Year()
+		year = time.Now().Year() - 1
 	} else {
 		year, err = strconv.Atoi(yearstr)
 		if err != nil {
@@ -66,17 +66,17 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			logrus.WithFields(logrus.Fields{
 				"err": err,
-			}).Error("Konu raporu yüklenemedi!")
+			}).Error("Rapor listesi oluşturulamadı!")
 			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu raporu listesi yüklenemedi!")))
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
 			return
 		}
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Error("Sehir raporu yüklenemedi!")
+		}).Error("Rapor listesi oluşturulamadı!")
 		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Sehir raporu listesi yüklenemedi!")))
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
 		return
 	}
 

@@ -1,3 +1,2 @@
-time="2018-12-31T23:04:49+03:00" level=info msg="Veritabanına bağlanılıyor..." database-address=root@/stajtest
-time="2018-12-31T23:04:49+03:00" level=info msg="Sunucu başlatılıyor..." addr="127.0.0.1:51656"
-time="2018-12-31T23:07:17+03:00" level=error msg="Staj eklenirken veritabanında bir hata oluştu!" err="Error 1452: Cannot add or update a child row: a foreign key constraint fails (`stajtest`.`staj`, CONSTRAINT `FK__ogrenci` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenci` (`No`))"
+time="2019-01-01T04:45:30+03:00" level=info msg="Veritabanına bağlanılıyor..." database-address=root@/stajtest
+time="2019-01-01T04:45:30+03:00" level=info msg="Sunucu başlatılıyor..." addr="127.0.0.1:51656"
