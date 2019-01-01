@@ -19,7 +19,10 @@ type Raporlar struct {
 
 type RaporlarVars struct {
 	KonuRapor  []database.RaporKonu
+	DagilimRapor  []database.RaporKonuDagilim
 	SehirRapor []database.RaporSehir
+	Baslangic int
+	Bitis int
 }
 
 func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -42,15 +45,17 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := templates.NewMain("StajTakip - Raporlar")
+	vars := RaporlarVars{}
+	data.Vars = vars
 
-	var year int
+	var baslangic, bitis int
 	var err error
 
-	yearstr := r.FormValue("year")
+	yearstr := r.FormValue("baslangic")
 	if yearstr == "" {
-		year = time.Now().Year() - 1
+		baslangic = time.Now().Year() - 1
 	} else {
-		year, err = strconv.Atoi(yearstr)
+		baslangic, err = strconv.Atoi(yearstr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Warning("Yıl eksik!")))
@@ -58,26 +63,60 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if sehirRapor, err := database.RaporSehirler(sh.Conn, year); err == nil {
-		if konuRapor, err := database.RaporKonular(sh.Conn, year); err == nil {
-			data.Vars = RaporlarVars{konuRapor, sehirRapor}
-			sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data))
-			return
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Rapor listesi oluşturulamadı!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+	yearstr = r.FormValue("bitis")
+	if yearstr == "" {
+		bitis = time.Now().Year() - 1
+	} else {
+		bitis, err = strconv.Atoi(yearstr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Warning("Yıl eksik!")))
 			return
 		}
+	}
+
+	if baslangic > bitis {
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Warning("Yıl yanlış!")))
+		return
+	}
+
+	vars.Baslangic = baslangic
+	vars.Bitis = bitis
+
+	if sehirRapor, err := database.RaporSehirler(sh.Conn, baslangic, bitis); err == nil {
+		vars.SehirRapor = sehirRapor
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Rapor listesi oluşturulamadı!")
 		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+		sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
 		return
 	}
 
+	if konuRapor, err := database.RaporKonular(sh.Conn, baslangic, bitis); err == nil {
+		vars.KonuRapor = konuRapor
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Rapor listesi oluşturulamadı!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+		return
+	}
+
+	if dagilimRapor, err := database.RaporKonularDagilim(sh.Conn, baslangic, bitis); err == nil {
+		vars.DagilimRapor = dagilimRapor
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Rapor listesi oluşturulamadı!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+		return
+	}
+
+	data.Vars = vars
+	sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data))
 }
