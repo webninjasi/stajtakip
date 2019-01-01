@@ -9,6 +9,16 @@ const TarihSaatFormati = "2006-01-02 15:04"
 const TarihFormati = "2006-01-02"
 const SaatFormati = "15:04"
 
+type MulakatOgrenciStaj struct {
+	OgrenciNo      int
+	Ad string
+	Soyad string
+	Ogretim int
+	StajBaslangic      string
+	KabulGun int
+	ToplamGun int
+}
+
 type MulakatOgrenci struct {
 	OgrenciNo      int
 	Ad string
@@ -155,6 +165,35 @@ FROM mulakat AS m, ogrenci AS o WHERE m.OgrenciNo=o.No AND m.PuanMulakat IS NULL
 		} else {
 			liste = append(liste, mul)
 		}
+	}
+
+	return liste, nil
+}
+
+func MulakatSonucListesi(conn *Connection, baslangic string, bitis string) ([]MulakatOgrenciStaj, error) {
+	const sql string = `SELECT m.OgrenciNo, o.Ad, o.Soyad, o.Ogretim,
+m.StajBaslangic, s.ToplamGun, s.KabulGun
+FROM mulakat AS m, ogrenci AS o, staj AS s WHERE m.OgrenciNo=o.No
+AND o.No=s.OgrenciNo AND m.StajBaslangic=s.Baslangic AND s.Degerlendirildi
+AND m.TarihSaat BETWEEN ? AND ?`
+
+	q, err := conn.db.Query(sql, baslangic, bitis)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	liste := []MulakatOgrenciStaj{}
+	for q.Next() {
+		var mul MulakatOgrenciStaj
+
+		err := q.Scan(&mul.OgrenciNo, &mul.Ad, &mul.Soyad, &mul.Ogretim, &mul.StajBaslangic,
+								 &mul.ToplamGun, &mul.KabulGun)
+		if err != nil {
+			return nil, err
+		}
+
+		liste = append(liste, mul)
 	}
 
 	return liste, nil
