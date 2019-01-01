@@ -50,7 +50,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   var dstjlar []database.DenkStaj
 
 	no, err = formSayi(r.FormValue("no"))
-	if err != nil || (no < 0) {
+	if err != nil || (no < 1) {
 		w.WriteHeader(http.StatusBadRequest)
 		sablonHatasi(w, tpl_ogrenci_bilgi.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
 		return
