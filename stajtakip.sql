@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `ogrenci` (
 -- Dumping structure for table stajtest.ogrenciek
 CREATE TABLE IF NOT EXISTS `ogrenciek` (
   `OgrenciNo` int(11) NOT NULL,
-  `Dosya` varchar(50) NOT NULL,
+  `Dosya` varchar(100) NOT NULL,
   PRIMARY KEY (`OgrenciNo`),
   CONSTRAINT `FK_OgrenciEk_ogrenci` FOREIGN KEY (`OgrenciNo`) REFERENCES `ogrenci` (`No`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin5;

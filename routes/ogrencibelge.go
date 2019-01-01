@@ -69,11 +69,8 @@ func (sh OgrenciBelge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ogr := database.OgrenciEk{no, dosyaadi}
 	if err := ogr.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("Öğrenci belgesi eklenirken veritabanında bir hata oluştu!")
 		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Error(err.Error())))
 		return
 	}
 
