@@ -14,7 +14,7 @@
         <label for="baslangic">Başlangıç Tarihi</label>
       </div>
       <div class="col-10">
-        <input class="form-control" name="baslangic" type="date">
+        <input class="form-control" name="baslangic" type="date"{{if .Vars.Baslangic}} value="{{.Vars.Baslangic}}"{{end}}>
       </div>
     </div>
 
@@ -23,7 +23,7 @@
         <label for="bitis">Bitiş Tarihi</label>
       </div>
       <div class="col-10">
-        <input class="form-control" name="bitis" type="date">
+        <input class="form-control" name="bitis" type="date"{{if .Vars.Bitis}} value="{{.Vars.Bitis}}"{{end}}>
       </div>
       </div>
 
@@ -33,8 +33,8 @@
   <hr>
 
   {{if .Vars.Mul}}
-  <a href="/sonuc-listele-pdf" class="btn btn-info"><span class="oi oi-file"></span> PDF</a>
-  <a href="/sonuc-listele-xls" class="btn btn-info"><span class="oi oi-document"></span> XLSX</a>
+  <a href="/sonuc-listele-pdf?baslangic={{.Vars.Baslangic}}&bitis={{.Vars.Bitis}}" class="btn btn-info"><span class="oi oi-file"></span> PDF</a>
+  <a href="/sonuc-listele-xlsx?baslangic={{.Vars.Baslangic}}&bitis={{.Vars.Bitis}}" class="btn btn-info"><span class="oi oi-document"></span> XLSX</a>
 
   <br>
   <br>

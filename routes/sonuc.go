@@ -13,6 +13,8 @@ var tpl_sonuclar = templates.Load("templates/mulakat-sonuc.html")
 
 type SonucListeleVars struct {
   Mul []database.MulakatOgrenciStaj
+  Baslangic string
+  Bitis string
 }
 
 type SonucListele struct {
@@ -28,6 +30,8 @@ func (sh SonucListele) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   data := templates.NewMain("StajTakip - Mülakat Sonuçları")
   vars := SonucListeleVars{
     Mul: nil,
+    Baslangic: "",
+    Bitis: "",
   }
   data.Vars = vars
 
@@ -47,7 +51,6 @@ func (sh SonucListele) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   baslangicstr := r.FormValue("baslangic")
 
   if bitisstr == "" || baslangicstr == "" {
-    data.Vars = vars
   	w.WriteHeader(http.StatusOK)
   	sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data))
     return
@@ -63,7 +66,7 @@ func (sh SonucListele) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   bitis, err = formStr(bitisstr)
   if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data.Warning("Başlangıç tarihi eksik veya yanlış!")))
+		sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data.Warning("Bitiş tarihi eksik veya yanlış!")))
     return
   }
 
@@ -85,19 +88,19 @@ func (sh SonucListele) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  vars.Baslangic = baslangic
+  vars.Bitis = bitis
   vars.Mul, err = database.MulakatSonucListesi(sh.Conn, baslangic, bitis)
-  if err == database.ErrVeriBulunamadi {
-    w.WriteHeader(http.StatusBadRequest)
-    sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data.Warning("Mülakat sonucu bulunamadı!")))
-    return
-  } else if err != nil {
+  if err != nil {
     logrus.WithFields(logrus.Fields{
       "err": err,
-    }).Error("Mülakat aranırken veritabanında bir hata oluştu!")
+    }).Error("Mülakat sonuçları listelenirken veritabanında bir hata oluştu!")
     w.WriteHeader(http.StatusInternalServerError)
     sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
     return
   }
+
+  data.Vars = vars
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_sonuclar.ExecuteTemplate(w, "main", data))
