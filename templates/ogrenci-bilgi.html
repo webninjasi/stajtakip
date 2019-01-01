@@ -78,7 +78,15 @@
         <td>{{.Sinif}}</td>
         <td>{{.KabulGun}}</td>
         <td>{{.ToplamGun}}</td>
-        <td>{{if .Degerlendirildi}}Değerlendirildi{{else}}Değerlendirilmedi{{end}}</td>
+        <td>
+          {{if .Degerlendirildi}}
+          Değerlendirildi
+          {{else}}
+          <a href="/staj-degerlendir?no={{.OgrenciNo}}&baslangic={{.Baslangic}}" class="btn btn-primary">
+            <span class="oi oi-check"></span> Değerlendir
+          </a>
+          {{end}}
+        </td>
       </tr>
       {{end}}
     </tbody>
