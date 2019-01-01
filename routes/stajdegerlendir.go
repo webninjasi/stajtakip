@@ -87,6 +87,10 @@ func (sh StajDegerlendir) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  if vars.Mul.Tarih == "" {
+    data = data.Warning("Bu mülakat için tarih bulunmuyor, eğer değerlendirirseniz sonuç listesinde gözükmeyecektir!")
+  }
+
 	w.WriteHeader(code)
 	sablonHatasi(w, tpl_staj_degerlendir.ExecuteTemplate(w, "main", data))
 }
