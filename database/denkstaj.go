@@ -1,5 +1,12 @@
 package database
 
+import (
+	"errors"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
+)
+
 type DenkStaj struct {
 	OgrenciNo       int
 	KurumAdi        string
@@ -11,17 +18,26 @@ type DenkStaj struct {
 func (stj *DenkStaj) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO denkstaj (OgrenciNo, KurumAdi, OncekiOkul, ToplamGun, KabulGun) VALUES (?, ?, ?, ?, ?);"
 
-	result, err := conn.db.Exec(sql, stj.OgrenciNo, stj.KurumAdi, stj.OncekiOkul, stj.ToplamGun, stj.KabulGun)
-	if err != nil {
-		return err
+	_, err := conn.db.Exec(sql, stj.OgrenciNo, stj.KurumAdi, stj.OncekiOkul, stj.ToplamGun, stj.KabulGun)
+	if err == nil {
+		return nil
 	}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+	me, ok := err.(*mysql.MySQLError)
+	if ok {
+		if me.Number == 1062 {
+			return errors.New("Bu öğrenci için dgs/yatay geçiş staj girişi zaten var!")
+		}
+		if me.Number == 1264 {
+			return errors.New("Sayısal değerlerden biri max değeri aşıyor!")
+		}
 	}
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("DenkStaj eklenirken veritabanında bir hata oluştu!")
+
+	return errors.New("Veritabanında bir hata oluştu!")
 }
 
 func OgrenciDenkStajListesi(conn *Connection, no int) ([]DenkStaj, error) {

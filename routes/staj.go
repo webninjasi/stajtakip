@@ -232,11 +232,8 @@ func (sh StajEkle) DenkStajEkle(data templates.Main, w http.ResponseWriter, r *h
 
 	ogr := database.DenkStaj{ogrno, kurum, okul, toplamgun, toplamgun / 2}
 	if err := ogr.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("DenkStaj eklenirken veritabanında bir hata oluştu!")
 		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error(err.Error())))
 		return
 	}
 
