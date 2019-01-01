@@ -32,9 +32,6 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	// Staj
 	s.mux.Handle("/staj-ekle", routes.StajEkle{conn})
 	s.mux.Handle("/konular", routes.KonuListesi{conn}) // Konu listesi
-	s.mux.Handle("/konu-ekle", routes.KonuEkle{conn})
-	s.mux.Handle("/konu-sil", routes.KonuSil{conn})
-	s.mux.Handle("/konu-guncelle", routes.KonuGuncelle{conn})
 
 	// Mülakat
 	s.mux.Handle("/mulakat", routes.MulakatListesi{conn}) // Tarih/saat, komisyon -> öğrenci, ...
@@ -45,13 +42,6 @@ func (s *StajServer) SetHandlers(conn *database.Connection) {
 	s.mux.Handle("/sonuc-listele-xlsx", routes.SonucListesiXLSX{conn})
 	s.mux.Handle("/staj-degerlendir", routes.StajDegerlendir{conn})    // Mülakat sonucu ekle
 	s.mux.Handle("/komisyon", routes.KomisyonListesi{conn}) // Komisyon Listesi
-	s.mux.Handle("/komisyon-ekle", routes.KomisyonEkle{conn})
-	s.mux.Handle("/komisyon-cikart", routes.KomisyonSil{conn})
-	s.mux.Handle("/komisyon-guncelle", routes.KomisyonGuncelle{conn})
-
-	// Rapor
-	s.mux.Handle("/rapor-il", routes.TODO{conn})   // İl bazında başarı
-	s.mux.Handle("/rapor-konu", routes.TODO{conn}) // Konu bazında başarı/dağılım (yıllık)
 }
 
 func (s *StajServer) Run() error {

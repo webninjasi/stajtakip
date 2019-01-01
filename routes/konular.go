@@ -10,32 +10,46 @@ import (
 
 var tpl_konu_listesi = templates.Load("templates/konular.html")
 
-type KonuListesi struct {
-	Conn *database.Connection
-}
-
-type KonuEkle struct {
-	Conn *database.Connection
-}
-
-type KonuSil struct {
-	Conn *database.Connection
-}
-
-type KonuGuncelle struct {
-	Conn *database.Connection
-}
-
 type KonularVars struct {
 	Konular []database.Konu
 }
 
-func (sh KonuListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	data := templates.NewMain("StajTakip - Konu Listesi")
+type KonuListesi struct {
+	Conn *database.Connection
+}
 
-	if r.Method != http.MethodGet {
-		http.Error(w, "Get metodu kullanılmalı!", http.StatusNotFound)
+func (sh KonuListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Geçersiz metod!", http.StatusNotFound)
 		return
+	}
+
+	code := http.StatusOK
+	data := templates.NewMain("StajTakip - Konular")
+
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("Form okunamadı!")
+			w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_konu_listesi.ExecuteTemplate(w, "main", data.Error("Form okunamadı!")))
+			return
+		}
+
+		gorev, err := formStr(r.PostFormValue("gorev"))
+		if err != nil {
+			http.Error(w, "Eksik parametre!", http.StatusBadRequest)
+			return
+		}
+
+		if gorev == "ekle" {
+			code, data = sh.Ekle(w, r, data)
+		} else if gorev == "guncelle" {
+			code, data = sh.Guncelle(w, r, data)
+		} else if gorev == "sil" {
+			code, data = sh.Sil(w, r, data)
+		}
 	}
 
 	if konular, err := database.KonuListesi(sh.Conn); err == nil {
@@ -49,35 +63,14 @@ func (sh KonuListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
 	sablonHatasi(w, tpl_konu_listesi.ExecuteTemplate(w, "main", data))
 }
 
-func (sh KonuEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
-	}
-
-	data := templates.NewMain("StajTakip - Konu Ekle")
-
-	if err := r.ParseForm(); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Warn("Konu ekleme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu ekleme formu okunamadı!")))
-		return
-	}
-
-	var baslik string
-	var err error
-
-	baslik, err = formStr(r.PostFormValue("Baslik"))
+func (sh KonuListesi) Ekle(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	baslik, err := formStr(r.PostFormValue("baslik"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Warning("Baslik eksik!")))
-		return
+		return http.StatusBadRequest, data.Warning("Baslik eksik!")
 	}
 
 	konu := database.Konu{baslik, true}
@@ -85,95 +78,45 @@ func (sh KonuEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Konu eklenirken veritabanında bir hata oluştu!")
-		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu eklenirken veritabanında bir hata oluştu!")))
-		return
+		return http.StatusInternalServerError, data.Error("Konu eklenirken veritabanında bir hata oluştu!")
 	}
 
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Konu veritabanına başarıyla eklendi!")))
+	return http.StatusOK, data.Info("Konu veritabanına başarıyla eklendi!")
 }
 
-func (sh KonuGuncelle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
+func (sh KonuListesi) Guncelle(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	baslik, err := formStr(r.PostFormValue("baslik"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Baslik eksik!")
 	}
 
-	data := templates.NewMain("StajTakip - Konu Sil")
+	aktifMidir := r.PostFormValue("aktif") != ""
+	konu := database.Konu{baslik, aktifMidir}
 
-	if err := r.ParseForm(); err != nil {
+	if err := konu.Update(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Warn("Konu silme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu silme formu okunamadı!")))
-		return
+		}).Error("Konu guncellenirken veritabanında bir hata oluştu!")
+		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
 	}
 
-	var baslik string
-	var aktifMi string
-
-	baslik = r.PostFormValue("baslik")
-
-	aktifMi = r.PostFormValue("aktif")
-	if aktifMi != "" {
-		konu := database.Konu{baslik, true}
-		if err := konu.Update(sh.Conn); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Konu eklenirken veritabanında bir hata oluştu!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu eklenirken veritabanında bir hata oluştu!")))
-			return
-		}
-	} else {
-		konu := database.Konu{baslik, false}
-		if err := konu.Update(sh.Conn); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Konu eklenirken veritabanında bir hata oluştu!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu eklenirken veritabanında bir hata oluştu!")))
-			return
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Konu veritabanından başarıyla değiştirildi.")))
+	return http.StatusOK, data.Info("Konu güncellendi!")
 }
 
-func (sh KonuSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
+func (sh KonuListesi) Sil(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	baslik, err := formStr(r.PostFormValue("baslik"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("Baslik eksik!")
 	}
-
-	data := templates.NewMain("StajTakip - Konu Sil")
-
-	if err := r.ParseForm(); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Warn("Konu silme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu silme formu okunamadı!")))
-		return
-	}
-
-	var baslik string
-
-	baslik = r.PostFormValue("baslik")
 
 	konu := database.Konu{baslik, true}
+
 	if err := konu.Delete(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Error("Konu eklenirken veritabanında bir hata oluştu!")
-		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Konu eklenirken veritabanında bir hata oluştu!")))
-		return
+		}).Error("Konu silinirken veritabanında bir hata oluştu!")
+		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
 	}
 
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Konu veritabanından başarıyla değiştirildi.")))
+	return http.StatusOK, data.Info("Konu veritabanından başarıyla silindi!")
 }

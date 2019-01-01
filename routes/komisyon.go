@@ -10,32 +10,46 @@ import (
 
 var tpl_komisyon = templates.Load("templates/komisyon.html")
 
-type KomisyonListesi struct {
-	Conn *database.Connection
-}
-
-type KomisyonEkle struct {
-	Conn *database.Connection
-}
-
-type KomisyonSil struct {
-	Conn *database.Connection
-}
-
-type KomisyonGuncelle struct {
-	Conn *database.Connection
-}
-
 type KomisyonVars struct {
 	Uyeler []database.Komisyon
 }
 
-func (sh KomisyonListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	data := templates.NewMain("StajTakip - Komisyon Listesi")
+type KomisyonListesi struct {
+	Conn *database.Connection
+}
 
-	if r.Method != http.MethodGet {
-		http.Error(w, "Get metodu kullanılmalı!", http.StatusNotFound)
+func (sh KomisyonListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Geçersiz metod!", http.StatusNotFound)
 		return
+	}
+
+	code := http.StatusOK
+	data := templates.NewMain("StajTakip - Komisyon")
+
+	if r.Method == http.MethodPost {
+		if err := r.ParseForm(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("Form okunamadı!")
+			w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_komisyon.ExecuteTemplate(w, "main", data.Error("Form okunamadı!")))
+			return
+		}
+
+		gorev, err := formStr(r.PostFormValue("gorev"))
+		if err != nil {
+			http.Error(w, "Eksik parametre!", http.StatusBadRequest)
+			return
+		}
+
+		if gorev == "ekle" {
+			code, data = sh.Ekle(w, r, data)
+		} else if gorev == "guncelle" {
+			code, data = sh.Guncelle(w, r, data)
+		} else if gorev == "sil" {
+			code, data = sh.Sil(w, r, data)
+		}
 	}
 
 	if uyeler, err := database.KomisyonListesi(sh.Conn); err == nil {
@@ -49,137 +63,64 @@ func (sh KomisyonListesi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(code)
 	sablonHatasi(w, tpl_komisyon.ExecuteTemplate(w, "main", data))
 }
 
-func (sh KomisyonEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
-	}
-
-	data := templates.NewMain("StajTakip - Komisyon Ekle")
-
-	if err := r.ParseForm(); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Warn("Komisyon ekleme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon ekleme formu okunamadı!")))
-		return
-	}
-
+func (sh KomisyonListesi) Ekle(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
 	var adSoyad string
 	var err error
 
 	adSoyad, err = formStr(r.PostFormValue("adSoyad"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Warning("AdSoyad eksik!")))
-		return
+		return http.StatusBadRequest, data.Warning("AdSoyad eksik!")
 	}
 
 	kom := database.Komisyon{adSoyad, true}
+	
 	if err := kom.Insert(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Komisyon üyesi eklenirken veritabanında bir hata oluştu!")
-		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi eklenirken veritabanında bir hata oluştu!")))
-		return
+		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
 	}
 
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanına başarıyla eklendi!")))
+	return http.StatusOK, data.Info("Komisyon üyesi veritabanına başarıyla eklendi!")
 }
 
-func (sh KomisyonGuncelle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
-	}
-
-	data := templates.NewMain("StajTakip - Komisyon Sil")
-
-	if err := r.ParseForm(); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Warn("Komisyon güncelleme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon güncelleme formu okunamadı!")))
-		return
-	}
-
-	var adSoyad string
-	var dahilMi string
-	var err error
-
-	adSoyad, err = formStr(r.PostFormValue("adSoyad"))
+func (sh KomisyonListesi) Guncelle(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	adSoyad, err := formStr(r.PostFormValue("adSoyad"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Warning("AdSoyad eksik!")))
-		return
-	}
-	dahilMi = r.PostFormValue("dahil")
-
-	if dahilMi != "" {
-		kom := database.Komisyon{adSoyad, true}
-		if err := kom.Update(sh.Conn); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon güncellenirken silinirken veritabanında bir hata oluştu!")))
-			return
-		}
-	} else {
-		kom := database.Komisyon{adSoyad, false}
-		if err := kom.Update(sh.Conn); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")))
-			return
-		}
+		return http.StatusBadRequest, data.Warning("AdSoyad eksik!")
 	}
 
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanında başarıyla güncellendi.")))
-}
+	dahilMi := r.PostFormValue("dahil") != ""
+	kom := database.Komisyon{adSoyad, dahilMi}
 
-func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
-	}
-
-	data := templates.NewMain("StajTakip - Komisyon Guncelle")
-
-	if err := r.ParseForm(); err != nil {
+	if err := kom.Update(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Warn("Komisyon silme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon silme formu okunamadı!")))
-		return
+		}).Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")
+		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
 	}
 
-	var adSoyad string
+	return http.StatusOK, data.Info("Komisyon üyesi güncellendi!")
+}
 
-	adSoyad = r.PostFormValue("adSoyad")
+func (sh KomisyonListesi) Sil(w http.ResponseWriter, r *http.Request, data templates.Main) (int, templates.Main) {
+	adSoyad, err := formStr(r.PostFormValue("adSoyad"))
+	if err != nil {
+		return http.StatusBadRequest, data.Warning("AdSoyad eksik!")
+	}
 
 	kom := database.Komisyon{adSoyad, true}
+
 	if err := kom.Delete(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
-		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
-		return
+		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
 	}
 
-	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanından başarıyla silindi.")))
+	return http.StatusOK, data.Info("Komisyon üyesi veritabanından başarıyla silindi!")
 }
