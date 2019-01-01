@@ -94,9 +94,7 @@ func (sh KomisyonEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanına başarıyla eklendi!")))
 }
 
-
-
-func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh KomisyonGuncelle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
 		return
@@ -107,9 +105,9 @@ func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Warn("Komisyon silme formu okunamadı!")
+		}).Warn("Komisyon güncelleme formu okunamadı!")
 		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon silme formu okunamadı!")))
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon güncelleme formu okunamadı!")))
 		return
 	}
 
@@ -124,30 +122,64 @@ func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	dahilMi = r.PostFormValue("dahil")
-	
 
-	if dahilMi != ""{
+	if dahilMi != "" {
 		kom := database.Komisyon{adSoyad, true}
 		if err := kom.Update(sh.Conn); err != nil {
 			logrus.WithFields(logrus.Fields{
 				"err": err,
-			}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
+			}).Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")
 			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon güncellenirken silinirken veritabanında bir hata oluştu!")))
 			return
-		} 
-	}else{
+		}
+	} else {
 		kom := database.Komisyon{adSoyad, false}
 		if err := kom.Update(sh.Conn); err != nil {
 			logrus.WithFields(logrus.Fields{
 				"err": err,
-			}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
+			}).Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")
 			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi güncellenirken veritabanında bir hata oluştu!")))
 			return
 		}
 	}
-	
+
 	w.WriteHeader(http.StatusOK)
-	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanından başarıyla değiştirildi.")))
+	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanında başarıyla güncellendi.")))
+}
+
+func (sh KomisyonSil) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
+		return
+	}
+
+	data := templates.NewMain("StajTakip - Komisyon Guncelle")
+
+	if err := r.ParseForm(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Komisyon silme formu okunamadı!")
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon silme formu okunamadı!")))
+		return
+	}
+
+	var adSoyad string
+
+	adSoyad = r.PostFormValue("adSoyad")
+
+	kom := database.Komisyon{adSoyad, true}
+	if err := kom.Delete(sh.Conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Komisyon üyesi silinirken veritabanında bir hata oluştu!")))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Info("Komisyon üyesi veritabanından başarıyla silindi.")))
 }

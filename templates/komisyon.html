@@ -30,10 +30,16 @@
           <tr>
             <td scope="row">{{.AdSoyad}}</td>
             <td scope="row">
-            <form method="POST" action="/komisyon-cikart">
+            <form method="POST" action="/komisyon-guncelle">
               <input type="hidden" name="adSoyad" value="{{.AdSoyad}}" >
               <input type="checkbox" name="dahil" onchange="this.form.submit()" {{if .Dahil}} checked{{end}} >
             </form>
+            </td>
+            <td scope= "row">
+                <form method="POST" action="/komisyon-cikart">
+                  <input type="hidden" name="adSoyad" value="{{.AdSoyad}}" >
+                <input class="btn btn-primary" value="Sil" type="submit">
+                </form>
             </td>
           </tr>
           {{end}}

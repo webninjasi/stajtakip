@@ -29,10 +29,17 @@
         <tr>
             <td scope="row">{{.Baslik}}</td>
             <td scope="row">
-            <form method="POST" action="/konu-sil">
+            <form method="POST" action="/konu-guncelle">
               <input type="hidden" name="baslik" value="{{.Baslik}}" >
               <input type="checkbox" name="aktif" onchange="this.form.submit()" {{if .Aktif}} checked{{end}} >
             </form>
+            <td scope= "row">
+              <form method="POST" action="/konu-sil">
+                <input type="hidden" name="baslik" value="{{.Baslik}}" >
+              <input class="btn btn-primary" value="Sil" type="submit">
+              </form>
+            </td>
+            
             </td>
           </tr>
         {{end}}

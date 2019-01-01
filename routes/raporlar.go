@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"stajtakip/database"
 	"stajtakip/templates"
+	"strconv"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -15,7 +17,11 @@ type Raporlar struct {
 	Conn *database.Connection
 }
 
-// Verilen parametrelere göre veritabanına bir öğrenci eklemeye çalışır
+type RaporlarVars struct {
+	KonuRapor  []database.RaporKonu
+	SehirRapor []database.RaporSehir
+}
+
 func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		w.WriteHeader(http.StatusNotFound)
@@ -37,11 +43,41 @@ func (sh Raporlar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	data := templates.NewMain("StajTakip - Raporlar")
 
-	err := tpl_raporlar.ExecuteTemplate(w, "main", data)
-	if err != nil {
-		http.Error(w, "Sayfa yüklenemedi!", http.StatusInternalServerError)
+	var year int
+	var err error
+
+	yearstr := r.FormValue("year")
+	if yearstr == "" {
+		year = time.Now().Year() - 1
+	} else {
+		year, err = strconv.Atoi(yearstr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data.Warning("Yıl eksik!")))
+			return
+		}
+	}
+
+	if sehirRapor, err := database.RaporSehirler(sh.Conn, year); err == nil {
+		if konuRapor, err := database.RaporKonular(sh.Conn, year); err == nil {
+			data.Vars = RaporlarVars{konuRapor, sehirRapor}
+			sablonHatasi(w, tpl_raporlar.ExecuteTemplate(w, "main", data))
+			return
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Error("Rapor listesi oluşturulamadı!")
+			w.WriteHeader(http.StatusInternalServerError)
+			sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+			return
+		}
+	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Warn("Şablon çalıştırılamadı!")
+		}).Error("Rapor listesi oluşturulamadı!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_mesaj.ExecuteTemplate(w, "main", data.Error("Rapor listesi oluşturulamadı!")))
+		return
 	}
+
 }

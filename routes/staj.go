@@ -15,7 +15,7 @@ var tpl_staj_ekle = templates.Load("templates/staj-ekle.html")
 const zamanFormati = "2006-01-02"
 
 type StajEkleVars struct {
-	Konular []database.Konu
+	Konular  []database.Konu
 	Kurumlar []string
 	DenkStaj bool
 }
@@ -136,9 +136,9 @@ func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r 
 	}
 
 	if t2.Sub(t1).Hours() < 1 {
-			w.WriteHeader(http.StatusBadRequest)
-			sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Başlangıç tarihi, bitiş tarihinden önce olmalıdır!")))
-			return
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Başlangıç tarihi, bitiş tarihinden önce olmalıdır!")))
+		return
 	}
 
 	sinif, err = formSayi(r.PostFormValue("sinif"))
@@ -208,7 +208,7 @@ func (sh StajEkle) DenkStajEkle(data templates.Main, w http.ResponseWriter, r *h
 		return
 	}
 
-	ogr := database.DenkStaj{ogrno, kurum, okul, toplamgun, toplamgun/2}
+	ogr := database.DenkStaj{ogrno, kurum, okul, toplamgun, toplamgun / 2}
 	if err := ogr.Insert(sh.Conn); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,

@@ -21,10 +21,21 @@ func (kom *Komisyon) Insert(conn *Connection) error {
 	return nil
 }
 
-func(kom *Komisyon) Update(conn *Connection) error {
+func (kom *Komisyon) Update(conn *Connection) error {
 	const sql string = "UPDATE komisyon SET Dahil = (?) WHERE AdSoyad = (?);"
 
 	_, err := conn.db.Exec(sql, kom.Dahil, kom.AdSoyad)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (kom *Komisyon) Delete(conn *Connection) error {
+	const sql string = "DELETE FROM komisyon WHERE AdSoyad = (?);"
+
+	_, err := conn.db.Exec(sql, kom.AdSoyad)
 	if err != nil {
 		return err
 	}
@@ -45,12 +56,12 @@ func KomisyonListesi(conn *Connection) ([]Komisyon, error) {
 	for q.Next() {
 		var AdSoyad string
 		var Dahil bool
-		err = q.Scan(&AdSoyad,&Dahil)
+		err = q.Scan(&AdSoyad, &Dahil)
 		if err != nil {
 			return nil, err
 		}
 
-		liste = append(liste, Komisyon{AdSoyad,Dahil})
+		liste = append(liste, Komisyon{AdSoyad, Dahil})
 	}
 
 	return liste, nil

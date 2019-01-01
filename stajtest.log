@@ -1,0 +1,2 @@
+time="2019-01-01T04:45:30+03:00" level=info msg="Veritabanına bağlanılıyor..." database-address=root@/stajtest
+time="2019-01-01T04:45:30+03:00" level=info msg="Sunucu başlatılıyor..." addr="127.0.0.1:51656"
