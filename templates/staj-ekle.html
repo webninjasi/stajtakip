@@ -39,7 +39,7 @@
         <label for="no">Öğrenci No</label>
       </div>
       <div class="col-4">
-        <input class="form-control" name="no" type="number">
+        <input class="form-control" name="no" type="number"{{if .Vars.No}} value="{{.Vars.No}}"{{end}}>
       </div>
       <div class="col-2">
         <input class="btn btn-primary" type="submit" value="Staj Ekle">

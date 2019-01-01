@@ -31,9 +31,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
   data := templates.NewMain("StajTakip - Öğrenci Bilgileri")
-  data.Vars = OgrenciBilgiVars{
-    Ogr: nil,
-  }
+  data.Vars = OgrenciBilgiVars{}
 
 	if err := r.ParseForm(); err != nil {
 		logrus.WithFields(logrus.Fields{
