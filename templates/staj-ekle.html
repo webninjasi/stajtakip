@@ -83,9 +83,15 @@
 
         <div class="form-group row">
           <div class="col-2 form-label">
+            <label for="xno">Öğrenci No</label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" name="xno" type="text" value="{{.Vars.No}}" disabled>
+          </div>
+          <div class="col-2 form-label">
             <label for="konu">Konu</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <select class="custom-select" name="konu" id="stajKonu">
               {{range .Vars.Konular}}
               {{if .Aktif}}
@@ -150,28 +156,31 @@
 
         <div class="form-group row">
           <div class="col-2 form-label">
-            <label for="kurum">Kurum</label>
+            <label for="xno">Öğrenci No</label>
           </div>
-          <div class="col-10">
-            <input class="form-control" name="kurum" type="text" list="kurumlist">
+          <div class="col-4">
+            <input class="form-control" name="xno" type="text" value="{{.Vars.No}}" disabled>
           </div>
-        </div>
-
-        <div class="form-group row">
-          <div class="col-2 form-label">
-            <label for="okul">Önceki Okul</label>
-          </div>
-          <div class="col-10">
-            <input class="form-control" name="okul" type="text">
-          </div>
-        </div>
-
-        <div class="form-group row">
           <div class="col-2 form-label">
             <label for="toplamgun">Toplam Gün</label>
           </div>
-          <div class="col-10">
+          <div class="col-4">
             <input class="form-control" name="toplamgun" type="number" min="1">
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <div class="col-2 form-label">
+            <label for="kurum">Kurum</label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" name="kurum" type="text" list="kurumlist">
+          </div>
+          <div class="col-2 form-label">
+            <label for="okul">Önceki Okul</label>
+          </div>
+          <div class="col-4">
+            <input class="form-control" name="okul" type="text">
           </div>
         </div>
 
