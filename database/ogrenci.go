@@ -2,7 +2,6 @@ package database
 
 import (
 	"stajtakip/cfg"
-	"errors"
 )
 
 type Ogrenci struct {
@@ -11,8 +10,6 @@ type Ogrenci struct {
 	Soyad   string
 	Ogretim int
 }
-
-var Err_ogrenci_yok error = errors.New("Öğrenci bulunamadı!")
 
 func (ogr *Ogrenci) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO ogrenci (No, Ad, Soyad, Ogretim) VALUES (?, ?, ?, ?);"
@@ -40,7 +37,7 @@ func OgrenciBul(conn *Connection, no int) (*Ogrenci, error) {
 	defer q.Close()
 
 	if !q.Next() {
-		return nil, Err_ogrenci_yok
+		return nil, ErrVeriBulunamadi
 	}
 
 	var ogr Ogrenci

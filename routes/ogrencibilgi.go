@@ -14,6 +14,7 @@ var tpl_ogrenci_bilgi = templates.Load("templates/ogrenci-bilgi.html")
 
 type OgrenciBilgiVars struct {
 	Ogr *database.Ogrenci
+	OgrEk *database.OgrenciEk
   Stajlar []database.Staj
   DenkStajlar []database.DenkStaj
 	Basari bool
@@ -57,7 +58,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
   ogr, err = database.OgrenciBul(sh.Conn, no)
-  if err == database.Err_ogrenci_yok {
+  if err == database.ErrVeriBulunamadi {
     w.WriteHeader(http.StatusBadRequest)
     sablonHatasi(w, tpl_ogrenci_bilgi.ExecuteTemplate(w, "main", data.Error("Öğrenci bulunamadı!")))
     return
@@ -65,6 +66,17 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
 		}).Error("Öğrenci bilgileri aranırken veritabanında bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_bilgi.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		return
+	}
+
+  ogrek, err := database.OgrenciEkBul(sh.Conn, no)
+  if err == database.ErrVeriBulunamadi {
+  } else if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Öğrenci ek bilgileri aranırken veritabanında bir hata oluştu!")
 		w.WriteHeader(http.StatusInternalServerError)
 		sablonHatasi(w, tpl_ogrenci_bilgi.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
 		return
@@ -109,6 +121,7 @@ func (sh OgrenciBilgi) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   data.Vars = OgrenciBilgiVars{
     Ogr: ogr,
+		OgrEk: ogrek,
     Stajlar: stjlar,
     DenkStajlar: dstjlar,
 		Basari: basari,

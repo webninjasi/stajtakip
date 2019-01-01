@@ -55,10 +55,14 @@
     </div>
   </form>
 
-  <div class="d-flex justify-content-end">
-    <a href="/staj-ekle?no={{.Vars.Ogr.No}}" class="btn btn-success"><span class="oi oi-plus"></span> Staj Ekle</a>
-  </div>
+  {{if .Vars.OgrEk}}
+  <a href="/uploads/{{.Vars.OgrEk.Dosya}}" class="btn btn-secondary">Belgeyi Göster</a>
+  {{else}}
+  <a href="/ogrenci-belge-ekle?no={{.Vars.Ogr.No}}" class="btn btn-secondary">Belge Ekle</a>
+  {{end}}
+  <a href="/staj-ekle?no={{.Vars.Ogr.No}}" class="btn btn-success"><span class="oi oi-plus"></span> Staj Ekle</a>
 
+  <br>
   <br>
 
   {{if ne (len .Vars.Stajlar) 0}}

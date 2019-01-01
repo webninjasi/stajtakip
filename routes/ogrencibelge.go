@@ -2,13 +2,14 @@ package routes
 
 import (
 	"net/http"
-	"stajtakip/database"
-	"stajtakip/templates"
-  "stajtakip/cfg"
-
+	"strconv"
   "path/filepath"
   "io"
   "os"
+
+	"stajtakip/database"
+	"stajtakip/templates"
+  "stajtakip/cfg"
 
 	"github.com/sirupsen/logrus"
 )
@@ -63,8 +64,18 @@ func (sh OgrenciBelge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   }
   defer istekdosya.Close()
 
-  dosyaadi := filepath.Base(handler.Filename)
+  dosyaadi := strconv.Itoa(no) + "-" + filepath.Base(handler.Filename)
   belgeyolu := filepath.Join("./uploads/", dosyaadi) // TODO upload yolunu cfg dosyasına ekle?
+
+	ogr := database.OgrenciEk{no, dosyaadi}
+	if err := ogr.Insert(sh.Conn); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("Öğrenci belgesi eklenirken veritabanında bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		return
+	}
 
   if filepath.Ext(dosyaadi) != ".pdf" {
       w.WriteHeader(http.StatusBadRequest)
@@ -91,16 +102,6 @@ func (sh OgrenciBelge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
      return
   }
-
-	ogr := database.OgrenciBelge{no, dosyaadi}
-	if err := ogr.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("Öğrenci belgesi eklenirken veritabanında bir hata oluştu!")
-		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
-		return
-	}
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Info("Öğrenci belgesi veritabanına başarıyla eklendi!")))
