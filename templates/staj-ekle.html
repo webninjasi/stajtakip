@@ -145,7 +145,7 @@
       </form>
     </div>
     <div class="collapse{{if .Vars.DenkStaj}} show{{end}}" id="denkstaj" data-parent="#stajgroup">
-      <form method="POST" action="/staj-ekle">
+      <form method="POST" action="/staj-ekle?no={{.Vars.No}}">
         <input type="hidden" name="denk" value="1">
 
         <div class="form-group row">
