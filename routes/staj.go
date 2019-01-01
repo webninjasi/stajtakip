@@ -2,10 +2,10 @@ package routes
 
 import (
 	"net/http"
+	"time"
+
 	"stajtakip/database"
 	"stajtakip/templates"
-
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,7 +17,9 @@ const zamanFormati = "2006-01-02"
 type StajEkleVars struct {
 	Konular  []database.Konu
 	Kurumlar []string
+	Stajlar []database.TumStaj
 	DenkStaj bool
+	No int
 }
 
 type StajEkle struct {
@@ -26,19 +28,44 @@ type StajEkle struct {
 
 // Verilen parametrelere göre veritabanına bir Staj eklemeye çalışır
 func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	data := templates.NewMain("StajTakip - Öğrenci Ekle")
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Geçersiz metod!", http.StatusNotFound)
+		return
+	}
 
-	if konular, err := database.KonuListesi(sh.Conn); err == nil {
-		if kurumlar, err := database.KurumListesi(sh.Conn); err == nil {
-			data.Vars = StajEkleVars{konular, kurumlar, false}
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Error("Kurum listesi yüklenemedi!")
-			w.WriteHeader(http.StatusInternalServerError)
-			sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Kurum listesi yüklenemedi!")))
+	data := templates.NewMain("StajTakip - Öğrenci Ekle")
+	vars := StajEkleVars{}
+	data.Vars = vars
+
+	if err := r.ParseForm(); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Staj ekleme formu okunamadı!")
+		w.WriteHeader(http.StatusBadRequest)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Parametre hatası!")))
+		return
+	}
+
+	var no int
+	var err error
+
+	nostr := r.FormValue("no")
+	if nostr == "" {
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data))
+		return
+	} else {
+		no, err = formSayi(nostr)
+		if err != nil || (no < 1) {
+			w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
 			return
 		}
+	}
+
+	vars.No = no
+
+	if konular, err := database.KonuListesi(sh.Conn); err == nil {
+		vars.Konular = konular
 	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
@@ -48,22 +75,32 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodGet {
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data))
-		return
-	}
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Post metodu kullanılmalı!", http.StatusNotFound)
-		return
-	}
-
-	if err := r.ParseForm(); err != nil {
+	if kurumlar, err := database.KurumListesi(sh.Conn); err == nil {
+		vars.Kurumlar = kurumlar
+	} else {
 		logrus.WithFields(logrus.Fields{
 			"err": err,
-		}).Warn("Staj ekleme formu okunamadı!")
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Staj ekleme formunda bir hata var!")))
+		}).Error("Kurum listesi yüklenemedi!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Kurum listesi yüklenemedi!")))
+		return
+	}
+
+	if stjlar, err := database.OgrenciTumStajListesi(sh.Conn, no); err == nil {
+		vars.Stajlar = stjlar
+	} else {
+    logrus.WithFields(logrus.Fields{
+      "err": err,
+    }).Error("Öğrenci staj bilgileri aranırken veritabanında bir hata oluştu!")
+    w.WriteHeader(http.StatusInternalServerError)
+    sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+    return
+  }
+
+	data.Vars = vars
+
+	if r.Method == http.MethodGet {
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data))
 		return
 	}
 
@@ -74,23 +111,16 @@ func (sh StajEkle) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if denk == 0 {
-		sh.NormalStajEkle(data, w, r)
+		sh.NormalStajEkle(data, w, r, no)
 	} else {
-		sh.DenkStajEkle(data, w, r)
+		sh.DenkStajEkle(data, w, r, no)
 	}
 }
 
-func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request) {
-	var ogrno, sinif, toplamgun int
+func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request, ogrno int) {
+	var sinif, toplamgun int
 	var kurum, sehir, konu, baslangic, bitis string
 	var err error
-
-	ogrno, err = formSayi(r.PostFormValue("no"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
-		return
-	}
 
 	kurum, err = formStr(r.PostFormValue("kurum"))
 	if err != nil {
@@ -171,21 +201,14 @@ func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r 
 	// TODO Eski değerleri inputlara ata
 }
 
-func (sh StajEkle) DenkStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request) {
-	var ogrno, toplamgun int
+func (sh StajEkle) DenkStajEkle(data templates.Main, w http.ResponseWriter, r *http.Request, ogrno int) {
+	var toplamgun int
 	var kurum, okul string
 	var err error
 
 	var dat StajEkleVars = data.Vars.(StajEkleVars)
 	dat.DenkStaj = true
 	data.Vars = dat
-
-	ogrno, err = formSayi(r.PostFormValue("no"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Warning("Öğrenci no eksik veya yanlış!")))
-		return
-	}
 
 	kurum, err = formStr(r.PostFormValue("kurum"))
 	if err != nil {
