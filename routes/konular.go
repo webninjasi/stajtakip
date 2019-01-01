@@ -75,10 +75,7 @@ func (sh KonuListesi) Ekle(w http.ResponseWriter, r *http.Request, data template
 
 	konu := database.Konu{baslik, true}
 	if err := konu.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("Konu eklenirken veritabanında bir hata oluştu!")
-		return http.StatusInternalServerError, data.Error("Konu eklenirken veritabanında bir hata oluştu!")
+		return http.StatusInternalServerError, data.Error(err.Error())
 	}
 
 	return http.StatusOK, data.Info("Konu veritabanına başarıyla eklendi!")

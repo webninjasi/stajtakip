@@ -1,5 +1,12 @@
 package database
 
+import (
+	"errors"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
+)
+
 type Konu struct {
 	Baslik string
 	Aktif   bool
@@ -8,17 +15,26 @@ type Konu struct {
 func (konu *Konu) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO konu (Baslik) VALUES (?);"
 
-	result, err := conn.db.Exec(sql, konu.Baslik)
-	if err != nil {
-		return err
+	_, err := conn.db.Exec(sql, konu.Baslik)
+	if err == nil {
+		return nil
 	}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+	me, ok := err.(*mysql.MySQLError)
+	if ok {
+		if me.Number == 1062 {
+			return errors.New("Bu konu zaten mevcut!")
+		}
+		if me.Number == 1406 {
+			return errors.New("Konu ismi çok uzun!")
+		}
 	}
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("Konu eklenirken veritabanında bir hata oluştu!")
+
+	return errors.New("Veritabanında bir hata oluştu!")
 }
 
 func(konu *Konu) Update(conn *Connection) error {

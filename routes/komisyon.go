@@ -77,12 +77,9 @@ func (sh KomisyonListesi) Ekle(w http.ResponseWriter, r *http.Request, data temp
 	}
 
 	kom := database.Komisyon{adSoyad, true}
-	
+
 	if err := kom.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("Komisyon üyesi eklenirken veritabanında bir hata oluştu!")
-		return http.StatusInternalServerError, data.Error("Veritabanında bir hata oluştu!")
+		return http.StatusInternalServerError, data.Error(err.Error())
 	}
 
 	return http.StatusOK, data.Info("Komisyon üyesi veritabanına başarıyla eklendi!")

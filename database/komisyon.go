@@ -1,5 +1,12 @@
 package database
 
+import (
+	"errors"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
+)
+
 type Komisyon struct {
 	AdSoyad string
 	Dahil   bool
@@ -8,17 +15,26 @@ type Komisyon struct {
 func (kom *Komisyon) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO komisyon (AdSoyad) VALUES (?);"
 
-	result, err := conn.db.Exec(sql, kom.AdSoyad)
-	if err != nil {
-		return err
+	_, err := conn.db.Exec(sql, kom.AdSoyad)
+	if err == nil {
+		return nil
 	}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+	me, ok := err.(*mysql.MySQLError)
+	if ok {
+		if me.Number == 1062 {
+			return errors.New("Bu komisyon üyesi zaten mevcut!")
+		}
+		if me.Number == 1406 {
+			return errors.New("Komisyon üye ismi çok uzun!")
+		}
 	}
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("Komisyon üyesi eklenirken veritabanında bir hata oluştu!")
+
+	return errors.New("Veritabanında bir hata oluştu!")
 }
 
 func (kom *Komisyon) Update(conn *Connection) error {
