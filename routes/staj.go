@@ -186,11 +186,8 @@ func (sh StajEkle) NormalStajEkle(data templates.Main, w http.ResponseWriter, r 
 
 	ogr := database.Staj{ogrno, kurum, sehir, konu, baslangic, bitis, sinif, toplamgun, 0, false}
 	if err := ogr.Insert(sh.Conn); err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Error("Staj eklenirken veritabanında bir hata oluştu!")
 		w.WriteHeader(http.StatusInternalServerError)
-		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error("Veritabanında bir hata oluştu!")))
+		sablonHatasi(w, tpl_staj_ekle.ExecuteTemplate(w, "main", data.Error(err.Error())))
 		return
 	}
 

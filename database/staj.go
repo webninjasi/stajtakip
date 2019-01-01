@@ -2,6 +2,10 @@ package database
 
 import (
 	dsql "database/sql"
+	"errors"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 type Staj struct {
@@ -20,17 +24,26 @@ type Staj struct {
 func (stj *Staj) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO staj (OgrenciNo, KurumAdi, Sehir, KonuBaslik, Baslangic, Bitis, Sinif, ToplamGun) VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
 
-	result, err := conn.db.Exec(sql, stj.OgrenciNo, stj.KurumAdi, stj.Sehir, stj.KonuBaslik, stj.Baslangic, stj.Bitis, stj.Sinif, stj.ToplamGun)
-	if err != nil {
-		return err
+	_, err := conn.db.Exec(sql, stj.OgrenciNo, stj.KurumAdi, stj.Sehir, stj.KonuBaslik, stj.Baslangic, stj.Bitis, stj.Sinif, stj.ToplamGun)
+	if err == nil {
+		return nil
 	}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+	me, ok := err.(*mysql.MySQLError)
+	if ok {
+		if me.Number == 1062 {
+			return errors.New("Bu staj zaten kayıtlı!")
+		}
+		if me.Number == 1264 {
+			return errors.New("Sayısal değerlerden biri max değeri aşıyor!")
+		}
 	}
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("Staj eklenirken veritabanında bir hata oluştu!")
+
+	return errors.New("Veritabanında bir hata oluştu!")
 }
 
 func OgrenciStajListesi(conn *Connection, no int) ([]Staj, error) {
