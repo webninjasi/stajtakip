@@ -68,7 +68,7 @@ SET PuanDevam=?, PuanCaba=?, PuanVakit=?, PuanAmireDavranis=?,
 PuanIsArkadasaDavranis=?, PuanProje=?, PuanDuzen=?, PuanSunum=?, PuanIcerik=?, PuanMulakat=?
 WHERE OgrenciNo=? AND StajBaslangic=?`
 	const sql2 string = `UPDATE staj
-SET Degerlendirildi=true
+SET Degerlendirildi=true, KabulGun=ToplamGun*?
 WHERE OgrenciNo=? AND Baslangic=?`
 
 	tx, err := conn.db.Begin()
@@ -79,7 +79,7 @@ WHERE OgrenciNo=? AND Baslangic=?`
 	_, err = tx.Exec(
     sql, mul.PuanDevam, mul.PuanCaba, mul.PuanVakit, mul.PuanAmireDavranis,
 		mul.PuanIsArkadasaDavranis, mul.PuanProje, mul.PuanDuzen, mul.PuanSunum,
-		mul.PuanIcerik, mul.PuanMulakat,mul.OgrenciNo, mul.StajBaslangic)
+		mul.PuanIcerik, mul.PuanMulakat, mul.OgrenciNo, mul.StajBaslangic)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			return err
@@ -87,7 +87,20 @@ WHERE OgrenciNo=? AND Baslangic=?`
 		return err
 	}
 
-	_, err = tx.Exec(sql2, mul.OgrenciNo, mul.StajBaslangic)
+	var kabulGun float64
+
+	kabulGun = float64(mul.PuanDevam) / 5.0 * 4
+	kabulGun += float64(mul.PuanCaba) / 5.0 * 4
+	kabulGun += float64(mul.PuanVakit) / 5.0 * 4
+	kabulGun += float64(mul.PuanAmireDavranis) / 5.0 * 4
+	kabulGun += float64(mul.PuanIsArkadasaDavranis) / 5.0 * 4
+	kabulGun += float64(mul.PuanProje) / 100.0 * 15
+	kabulGun += float64(mul.PuanDuzen) / 100.0 * 5
+	kabulGun += float64(mul.PuanSunum) / 100.0 * 5
+	kabulGun += float64(mul.PuanIcerik) / 100.0 * 15
+	kabulGun += float64(mul.PuanMulakat) / 100.0 * 40
+
+	_, err = tx.Exec(sql2, kabulGun/100.0, mul.OgrenciNo, mul.StajBaslangic)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			return err
