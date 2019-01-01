@@ -68,9 +68,11 @@
           </td>
           <td><input class="btn btn-success" type="submit" value="Güncelle"></td>
           <td>
+            {{if .Tarih}}
             <a href="/staj-degerlendir?no={{.OgrenciNo}}&baslangic={{.StajBaslangic}}" class="btn btn-primary">
               <span class="oi oi-check"></span> Değerlendir
             </a>
+            {{end}}
           </td>
         </form>
       </tr>
