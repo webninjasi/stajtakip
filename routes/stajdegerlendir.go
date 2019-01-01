@@ -88,7 +88,7 @@ func (sh StajDegerlendir) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   }
 
   if vars.Mul.Tarih == "" {
-    data = data.Warning("Bu mülakat için tarih bulunmuyor, eğer değerlendirirseniz sonuç listesinde gözükmeyecektir!")
+    data = data.Warning("Bu mülakat için tarih bulunmuyor!")
   }
 
 	w.WriteHeader(code)
@@ -163,13 +163,27 @@ func (sh StajDegerlendir) Post(w http.ResponseWriter, r *http.Request, data temp
     return http.StatusBadRequest, data.Warning("Puan eksik veya yanlış!")
   }
 
-  mul := database.MulakatSonuc{
+  mul, err := database.MulakatOgrenciBul(sh.Conn, no, baslangic)
+  if err == database.ErrVeriBulunamadi {
+    return http.StatusBadRequest, data.Error("Mülakat bulunamadı!")
+  } else if err != nil {
+    logrus.WithFields(logrus.Fields{
+      "err": err,
+    }).Error("Mülakat aranırken veritabanında bir hata oluştu!")
+    return http.StatusInternalServerError, data.Error("Mülakat sonucu eklenirken bir hata oluştu!")
+  }
+
+  if mul.Tarih == "" {
+    return http.StatusBadRequest, data.Warning("Bu mülakat için tarih girilmemiş!")
+  }
+
+  sonuc := database.MulakatSonuc{
     no, baslangic, PuanDevam, PuanCaba, PuanVakit,
     PuanAmireDavranis, PuanIsArkadasaDavranis,
     PuanProje, PuanDuzen, PuanSunum, PuanIcerik, PuanMulakat,
   }
 
-  if err := mul.Update(sh.Conn); err != nil {
+  if err := sonuc.Update(sh.Conn); err != nil {
     logrus.WithFields(logrus.Fields{
       "err": err,
     }).Warn("Mülakat sonucu eklenirken bir hata oluştu!")
