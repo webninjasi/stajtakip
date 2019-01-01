@@ -62,7 +62,9 @@
           <div class="col-10">
             <select class="custom-select" name="konu">
               {{range .Vars.Konular}}
+              {{if .Aktif}}
               <option value="{{.Baslik}}">{{.Baslik}}</option>
+              {{end}}
               {{end}}
             </select>
           </div>

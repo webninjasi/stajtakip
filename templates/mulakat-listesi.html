@@ -53,7 +53,9 @@
               <option value="-">-</option>
               {{$kom := .KomisyonUye1}}
               {{range $.Vars.Komisyon}}
+              {{if .Dahil}}
               <option value="{{.AdSoyad}}"{{if eq $kom .AdSoyad}} selected{{end}}>{{.AdSoyad}}</option>
+              {{end}}
               {{end}}
             </select>
           </td>
@@ -62,7 +64,9 @@
               <option value="-">-</option>
               {{$kom := .KomisyonUye2}}
               {{range $.Vars.Komisyon}}
+              {{if .Dahil}}
               <option value="{{.AdSoyad}}"{{if eq $kom .AdSoyad}} selected{{end}}>{{.AdSoyad}}</option>
+              {{end}}
               {{end}}
             </select>
           </td>
