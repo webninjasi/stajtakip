@@ -1,7 +1,12 @@
 package database
 
 import (
+	"errors"
+
 	"stajtakip/cfg"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 type Ogrenci struct {
@@ -14,17 +19,23 @@ type Ogrenci struct {
 func (ogr *Ogrenci) Insert(conn *Connection) error {
 	const sql string = "INSERT INTO ogrenci (No, Ad, Soyad, Ogretim) VALUES (?, ?, ?, ?);"
 
-	result, err := conn.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
-	if err != nil {
-		return err
+	_, err := conn.db.Exec(sql, ogr.No, ogr.Ad, ogr.Soyad, ogr.Ogretim)
+	if err == nil {
+		return nil
 	}
 
-	_, err = result.LastInsertId()
-	if err != nil {
-		return err
+	me, ok := err.(*mysql.MySQLError)
+	if ok {
+		if me.Number == 1062 {
+			return errors.New("Bu öğrenci zaten var!")
+		}
 	}
 
-	return nil
+	logrus.WithFields(logrus.Fields{
+		"err": err,
+	}).Error("Öğrenci eklenirken veritabanında bir hata oluştu!")
+
+	return errors.New("Veritabanında bir hata oluştu!")
 }
 
 func OgrenciBul(conn *Connection, no int) (*Ogrenci, error) {
