@@ -5,6 +5,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
+
+	dbsql "database/sql"
 )
 
 type OgrenciEk struct {
@@ -12,21 +14,27 @@ type OgrenciEk struct {
 	Dosya      string
 }
 
-func (ogr *OgrenciEk) Insert(conn *Connection) error {
+func (ogr *OgrenciEk) Insert(conn *Connection) (*dbsql.Tx, error) {
 	const sql string = "INSERT INTO ogrenciek (OgrenciNo, Dosya) VALUES (?, ?);"
 
-	_, err := conn.db.Exec(sql, ogr.OgrenciNo, ogr.Dosya)
-	if err == nil {
-		return nil
+	tx, err := conn.db.Begin()
+	if err != nil {
+		return nil, err
 	}
+
+	if _, err := tx.Exec(sql, ogr.OgrenciNo, ogr.Dosya); err == nil {
+		return tx, nil
+	}
+
+	tx.Rollback()
 
 	me, ok := err.(*mysql.MySQLError)
 	if ok {
 		if me.Number == 1062 {
-			return errors.New("Bu öğrenci için ek zaten var!")
+			return nil, errors.New("Bu öğrenci için ek zaten var!")
 		}
 		if me.Number == 1406 {
-			return errors.New("Dosya ismi çok uzun!")
+			return nil, errors.New("Dosya ismi çok uzun!")
 		}
 	}
 
@@ -34,7 +42,7 @@ func (ogr *OgrenciEk) Insert(conn *Connection) error {
 		"err": err,
 	}).Error("Öğrenci eki eklenirken veritabanında bir hata oluştu!")
 
-	return errors.New("Veritabanında bir hata oluştu!")
+	return nil, errors.New("Veritabanında bir hata oluştu!")
 }
 
 func OgrenciEkBul(conn *Connection, no int) (*OgrenciEk, error) {

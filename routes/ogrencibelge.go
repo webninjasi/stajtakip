@@ -53,52 +53,58 @@ func (sh OgrenciBelge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  istekdosya, handler, err := r.FormFile("dosya")
-  if err != nil {
-  		logrus.WithFields(logrus.Fields{
-  			"err": err,
-  		}).Warn("Dosya okunurken bir hata oluştu!")
-      w.WriteHeader(http.StatusInternalServerError)
-  		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
-     return
-  }
-  defer istekdosya.Close()
+	istekdosya, handler, err := r.FormFile("dosya")
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Dosya okunurken bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
+		return
+	}
+	defer istekdosya.Close()
 
-  dosyaadi := strconv.Itoa(no) + "-" + filepath.Base(handler.Filename)
-  belgeyolu := filepath.Join("./uploads/", dosyaadi) // TODO upload yolunu cfg dosyasına ekle?
+	dosyaadi := strconv.Itoa(no) + "-" + filepath.Base(handler.Filename)
+	belgeyolu := filepath.Join("./uploads/", dosyaadi) // TODO upload yolunu cfg dosyasına ekle?
 
 	ogr := database.OgrenciEk{no, dosyaadi}
-	if err := ogr.Insert(sh.Conn); err != nil {
+	tx, err := ogr.Insert(sh.Conn)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Error(err.Error())))
 		return
 	}
 
-  if filepath.Ext(dosyaadi) != ".pdf" {
-      w.WriteHeader(http.StatusBadRequest)
-  		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Sadece pdf dosyası yüklenebilir!")))
-     return
-  }
+	if filepath.Ext(dosyaadi) != ".pdf" {
+		tx.Rollback()
+		w.WriteHeader(http.StatusBadRequest)
+			sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Sadece pdf dosyası yüklenebilir!")))
+		return
+	}
 
-  diskdosya, err := os.OpenFile(belgeyolu, os.O_WRONLY|os.O_CREATE, 0666)
-  if err != nil {
-  		logrus.WithFields(logrus.Fields{
-  			"err": err,
-  		}).Warn("Dosya yazılırken bir hata oluştu!")
-      w.WriteHeader(http.StatusInternalServerError)
-  		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
-     return
-  }
-  defer diskdosya.Close()
+	diskdosya, err := os.OpenFile(belgeyolu, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		tx.Rollback()
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Dosya yazılırken bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
+		return
+	}
+	defer diskdosya.Close()
 
-  if _, err := io.Copy(diskdosya, istekdosya); err != nil {
-  		logrus.WithFields(logrus.Fields{
-  			"err": err,
-  		}).Warn("Dosya kopyalanırken bir hata oluştu!")
-      w.WriteHeader(http.StatusInternalServerError)
-  		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
-     return
-  }
+	if _, err := io.Copy(diskdosya, istekdosya); err != nil {
+		tx.Rollback()
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("Dosya kopyalanırken bir hata oluştu!")
+		w.WriteHeader(http.StatusInternalServerError)
+		sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Warning("Dosya ile ilgili bir problem oluştu!")))
+		return
+	}
+
+	tx.Commit()
 
 	w.WriteHeader(http.StatusOK)
 	sablonHatasi(w, tpl_ogrenci_belge.ExecuteTemplate(w, "main", data.Info("Öğrenci belgesi veritabanına başarıyla eklendi!")))
